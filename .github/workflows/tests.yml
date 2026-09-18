@@ -25,6 +25,10 @@ jobs:
         env:
           PYTHONPATH: 1-code/ops-control
         run: python -m unittest discover -s 1-code/ops-control/tests/unit -p 'test_*.py'
+      - name: Integration tests
+        env:
+          PYTHONPATH: 1-code/ops-control
+        run: python -m unittest discover -s 1-code/ops-control/tests/integration -p 'test_*.py'
       - name: Doctor offline
         env:
           PYTHONPATH: 1-code/ops-control
