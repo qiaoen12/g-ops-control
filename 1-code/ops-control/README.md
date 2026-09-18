@@ -2,24 +2,19 @@
 
 `ops-control` 是 G-lite OPS-002 的首个离线控制面基础包：严格 v1 JSON 契约、规范化摘要、受控 JSON 文件 IO、安全事件接口和 CLI 外壳。它不执行远端动作，也不替代后续 Issue 的 registry、plan、gateway、审批或 executor。
 
-## 离线安装
+## 离线安装与测试
 
-要求 Python 3.12 或更高版本。代码根不依赖 Ansible；运行时只需要 `jsonschema` 和 `PyYAML`。在能访问已批准依赖源的环境中：
+要求 Python 3.12 或更高版本。代码根不依赖 Ansible。请从仓库根目录创建虚拟环境、按锁文件安装依赖，并通过 `PYTHONPATH` 直接使用源码：
 
 ```bash
-python3.14 -m venv .venv
-.venv/bin/python -m pip install -r requirements.lock
-.venv/bin/python -m pip install .
+python3 -m venv .venv
+.venv/bin/python -m pip install -r 1-code/ops-control/requirements.lock
+export PYTHONPATH="$PWD/1-code/ops-control"
+.venv/bin/python -m unittest discover -s 1-code/ops-control/tests/unit -p 'test_*.py'
+.venv/bin/python -m ops doctor --offline
 ```
 
 `requirements.lock` 只锁定直接依赖版本；平台 wheel 的传递依赖由安装器解析。没有网络安装授权时，不应伪造 hash；先准备依赖，再按锁文件安装。
-
-## 运行与测试
-
-```bash
-.venv/bin/ops doctor --offline
-.venv/bin/python -m unittest discover -s tests/unit -p 'test_*.py'
-```
 
 `doctor --offline` 只检查本包 schema、依赖和可信定位到的脱敏 `2-infra/ops-control` policy/reference。当前命令树的其它命令先返回结构化 `unsupported_command` 和非零退出码，不读取参数文件，不连接主机。`--human` 只是把同一个 response 对象渲染为人类可读文本。
 
