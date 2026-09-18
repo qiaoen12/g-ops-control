@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ops-control.invalid/schema/host-projection.v1.json",
+  "title": "Trusted host projection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "host_id", "kind", "platform", "groups", "lifecycle", "policy_refs", "connection_ref"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "host_id": {"$ref": "common.v1.json#/$defs/safe_id"},
+    "kind": {"type": "string", "enum": ["server", "local_client"]},
+    "platform": {"$ref": "common.v1.json#/$defs/platform"},
+    "groups": {"$ref": "common.v1.json#/$defs/id_array"},
+    "lifecycle": {"type": "string", "enum": ["active", "paused", "retired"]},
+    "policy_refs": {"$ref": "common.v1.json#/$defs/id_array"},
+    "connection_ref": {"anyOf": [{"$ref": "common.v1.json#/$defs/connection_ref"}, {"type": "null"}]},
+    "machine_class": {"$ref": "common.v1.json#/$defs/safe_id"},
+    "services": {
+      "type": "object",
+      "maxProperties": 256,
+      "propertyNames": {"$ref": "common.v1.json#/$defs/safe_id"},
+      "additionalProperties": {"$ref": "common.v1.json#/$defs/service_projection"}
+    },
+    "ledger_vs_facts": {"type": ["string", "null"], "enum": ["consistent", "conflict", null]},
+    "former_host_id": {"anyOf": [{"$ref": "common.v1.json#/$defs/safe_id"}, {"type": "null"}]}
+  },
+  "allOf": [
+    {"if": {"properties": {"kind": {"const": "server"}}}, "then": {"properties": {"connection_ref": {"$ref": "common.v1.json#/$defs/connection_ref"}}}},
+    {"if": {"properties": {"kind": {"const": "local_client"}}}, "then": {"properties": {"connection_ref": {"type": "null"}}}}
+  ]
+}

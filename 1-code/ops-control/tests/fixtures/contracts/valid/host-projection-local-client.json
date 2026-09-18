@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "host_id": "lab-unmanaged-pc",
+  "kind": "local_client",
+  "platform": {"os": "windows", "family": "windows", "arch": "amd64"},
+  "groups": [],
+  "lifecycle": "active",
+  "policy_refs": ["unmanaged-not-in-inventory"],
+  "connection_ref": null,
+  "machine_class": "unmanaged_cloud_pc",
+  "services": {}
+}

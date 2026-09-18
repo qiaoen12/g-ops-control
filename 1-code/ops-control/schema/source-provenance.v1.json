@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ops-control.invalid/schema/source-provenance.v1.json",
+  "title": "Source hash provenance",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source", "first_read_at", "reverified_at", "pre_first_read_snapshot", "first_read_digest", "reverified_digest"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "source": {"$ref": "common.v1.json#/$defs/source"},
+    "first_read_at": {"anyOf": [{"$ref": "common.v1.json#/$defs/utc"}, {"type": "null"}]},
+    "reverified_at": {"anyOf": [{"$ref": "common.v1.json#/$defs/utc"}, {"type": "null"}]},
+    "pre_first_read_snapshot": {"type": "string", "enum": ["available", "unavailable"]},
+    "first_read_digest": {"anyOf": [{"$ref": "common.v1.json#/$defs/digest"}, {"type": "null"}]},
+    "reverified_digest": {"anyOf": [{"$ref": "common.v1.json#/$defs/digest"}, {"type": "null"}]}
+  }
+}

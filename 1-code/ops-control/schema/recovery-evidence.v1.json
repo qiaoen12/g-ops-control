@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ops-control.invalid/schema/recovery-evidence.v1.json",
+  "title": "Immutable recovery evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "evidence_id", "owner_id", "host_id", "kind", "status", "observed_at", "source", "summary", "artifact_digest"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "evidence_id": {"$ref": "common.v1.json#/$defs/uuid"},
+    "owner_id": {"$ref": "common.v1.json#/$defs/uuid"},
+    "host_id": {"$ref": "common.v1.json#/$defs/safe_id"},
+    "kind": {"type": "string", "enum": ["backup-restore-test", "backup-status", "manual-verification", "unknown"]},
+    "status": {"type": "string", "enum": ["verified", "unknown", "blocked", "missing"]},
+    "observed_at": {"$ref": "common.v1.json#/$defs/utc"},
+    "source": {"$ref": "common.v1.json#/$defs/source"},
+    "summary": {"$ref": "common.v1.json#/$defs/non_empty_text"},
+    "artifact_digest": {"anyOf": [{"$ref": "common.v1.json#/$defs/digest"}, {"type": "null"}]}
+  }
+}

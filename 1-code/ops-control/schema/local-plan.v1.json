@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ops-control.invalid/schema/local-plan.v1.json",
+  "title": "Bound local software plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "local_plan_id", "owner_id", "created_at", "expires_at", "software_id", "version", "source", "params", "impact", "plan_digest"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "local_plan_id": {"$ref": "common.v1.json#/$defs/uuid"},
+    "owner_id": {"$ref": "common.v1.json#/$defs/uuid"},
+    "created_at": {"$ref": "common.v1.json#/$defs/utc"},
+    "expires_at": {"$ref": "common.v1.json#/$defs/utc"},
+    "software_id": {"$ref": "common.v1.json#/$defs/safe_id"},
+    "version": {"type": "string", "minLength": 1, "maxLength": 256},
+    "source": {"$ref": "common.v1.json#/$defs/source"},
+    "params": {"$ref": "common.v1.json#/$defs/json_object"},
+    "impact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "service_interruption", "data_risk", "restart_required"],
+      "properties": {
+        "summary": {"$ref": "common.v1.json#/$defs/non_empty_text"},
+        "service_interruption": {"type": "boolean"},
+        "data_risk": {"type": "boolean"},
+        "restart_required": {"type": "boolean"}
+      }
+    },
+    "plan_digest": {"$ref": "common.v1.json#/$defs/digest"}
+  }
+}

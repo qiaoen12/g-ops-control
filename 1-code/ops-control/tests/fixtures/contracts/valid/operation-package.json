@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "package_id": "99999999-9999-4999-8999-999999999999",
+  "owner_id": "33333333-3333-4333-8333-333333333333",
+  "content_digest": "5a925ec2892d35e761ca5c5b5098d115e0d5850adf99a4fd91ea96bb3090669d",
+  "script_files": [{"path": "scripts/check.sh", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}],
+  "parameter_schema": {"type": "object", "properties": {"message": {"type": "string"}}, "required": ["message"], "additionalProperties": false},
+  "typed_params": {"message": "harmless test"},
+  "target_ids": ["lab-global-primary"],
+  "reason": "bounded offline validation fixture",
+  "expected_effects": ["report a result"],
+  "prohibited_effects": ["modify a host"],
+  "prechecks": ["target-resolved"],
+  "postchecks": ["result-written"],
+  "recovery_evidence": [],
+  "max_runtime_seconds": 60,
+  "reentrancy": "manual_review"
+}

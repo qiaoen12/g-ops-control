@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "source": {"kind": "file", "origin": "fixtures/source.yml", "version": null, "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+  "first_read_at": "2026-09-10T00:00:00Z",
+  "reverified_at": "2026-09-10T00:01:00Z",
+  "pre_first_read_snapshot": "unavailable",
+  "first_read_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "reverified_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}

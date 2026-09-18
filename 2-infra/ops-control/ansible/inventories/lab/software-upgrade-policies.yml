@@ -1,0 +1,185 @@
+---
+# Lab projection of old software-upgrade-policies.yml.
+# Host IDs remapped to fictional lab IDs. Adapter roles are named but not copied.
+software_upgrade_policies:
+  aether:
+    adapter_role: aether
+    allowed_groups: [aether_primary_hosts, aether_standby_hosts]
+    allowed_hosts: [lab-global-primary, lab-global-ops]
+    forbidden_groups: [nat_trial_hosts]
+    auto_upgrade_allowed: false
+    rollback_guarantee: strong
+    stateful: true
+    migration_risk: medium
+    concurrency:
+      lock_scope: host
+      lock_path: /var/lock/ops-software-upgrade.lockdir
+    rollout:
+      strategy: sequential
+      max_parallel: 1
+      role_groups:
+        primary: aether_primary_hosts
+        standby: aether_standby_hosts
+      order: [primary, standby]
+      fail_on_mixed_roles_without_force: true
+    offload_policy:
+      requires_offload_when_host_in: [offload_targets]
+      relay_host: lab-global-primary
+      relay_playbook: playbooks/offload-url-to-lab-cn.yml
+    notes: generic release adapter frozen; primary currently paused in old facts
+
+  aether_source_candidate:
+    adapter_role: aether
+    adapter_tasks_from: upgrade-source-candidate
+    adapter_check_tasks_from: check-source-candidate
+    auto_upgrade_allowed: true
+    allowed_groups: [aether_standby_hosts]
+    allowed_hosts: [lab-global-ops]
+    forbidden_groups: [nat_trial_hosts]
+    rollback_guarantee: strong
+    stateful: true
+    migration_risk: high
+    concurrency:
+      lock_scope: host
+      lock_path: /var/lock/ops-software-upgrade.lockdir
+
+  aether_source_prepare_primary:
+    adapter_role: aether
+    adapter_tasks_from: prepare-source-candidate-primary
+    adapter_check_tasks_from: check-prepared-source-primary
+    auto_upgrade_allowed: true
+    allowed_groups: [aether_primary_hosts]
+    allowed_hosts: [lab-global-primary]
+    forbidden_groups: [nat_trial_hosts]
+    rollback_guarantee: strong
+    stateful: true
+    migration_risk: high
+    concurrency:
+      lock_scope: host
+      lock_path: /var/lock/ops-software-upgrade.lockdir
+
+  aether_source_finalize_primary:
+    adapter_role: aether
+    adapter_tasks_from: finalize-source-candidate-primary
+    adapter_check_tasks_from: check-prepared-source-primary
+    auto_upgrade_allowed: true
+    allowed_groups: [aether_primary_hosts]
+    allowed_hosts: [lab-global-primary]
+    forbidden_groups: [nat_trial_hosts]
+    rollback_guarantee: strong
+    stateful: true
+    migration_risk: high
+    concurrency:
+      lock_scope: host
+      lock_path: /var/lock/ops-software-upgrade.lockdir
+
+  uptime_kuma:
+    adapter_role: uptime_kuma
+    auto_upgrade_allowed: true
+    allowed_groups: [kuma_hosts]
+    allowed_hosts: [lab-global-ops]
+    forbidden_groups: [nat_trial_hosts]
+    rollback_guarantee: medium
+    stateful: true
+    migration_risk: low
+    concurrency:
+      lock_scope: host
+      lock_path: /var/lock/ops-software-upgrade.lockdir
+
+  sub2api:
+    adapter_role: sub2api
+    auto_upgrade_allowed: true
+    allowed_groups: [sub2api_hosts]
+    allowed_hosts: [lab-global-ops]
+    forbidden_groups: [nat_trial_hosts]
+    rollback_guarantee: medium
+    stateful: true
+    migration_risk: medium
+    concurrency:
+      lock_scope: host
+      lock_path: /var/lock/ops-software-upgrade.lockdir
+
+  bitwarden_lite:
+    adapter_role: bitwarden_lite
+    auto_upgrade_allowed: true
+    allowed_groups: [bitwarden_lite_hosts]
+    allowed_hosts: [lab-global-ops]
+    forbidden_groups: [nat_trial_hosts]
+    approval:
+      required: true
+      variable: bitwarden_lite_production_upgrade_approved
+    rollback_guarantee: medium
+    stateful: true
+    migration_risk: high
+    concurrency:
+      lock_scope: host
+      lock_path: /var/lock/ops-software-upgrade.lockdir
+
+  komari_server:
+    adapter_role: komari_server
+    auto_upgrade_allowed: true
+    allowed_groups: [komari_hosts]
+    allowed_hosts: [lab-global-ops]
+    forbidden_groups: [nat_trial_hosts]
+    rollback_guarantee: medium
+    stateful: true
+    migration_risk: low
+    concurrency:
+      lock_scope: host
+      lock_path: /var/lock/ops-software-upgrade.lockdir
+
+  komari_agent:
+    adapter_role: komari_agent
+    auto_upgrade_allowed: true
+    allowed_groups: [managed_linux]
+    forbidden_groups: [nat_trial_hosts]
+    rollback_guarantee: medium
+    stateful: false
+    migration_risk: medium
+    concurrency:
+      lock_scope: host
+      lock_path: /var/lock/ops-software-upgrade.lockdir
+    offload_policy:
+      requires_offload_when_host_in: [offload_targets]
+      relay_host: lab-global-primary
+      relay_playbook: playbooks/offload-url-to-lab-cn.yml
+    notes: old source blocks direct upgrade on offload_targets until offload adapter exists
+
+  xray_proxy:
+    adapter_role: xray_proxy
+    auto_upgrade_allowed: true
+    allowed_groups: [standard_proxy_hosts]
+    allowed_hosts: [lab-global-ops, lab-global-proxy]
+    forbidden_groups: [nat_trial_hosts, xui_hosts]
+    rollback_guarantee: strong
+    stateful: false
+    migration_risk: low
+    concurrency:
+      lock_scope: host
+      lock_path: /var/lock/ops-software-upgrade.lockdir
+
+  xui:
+    adapter_role: xui
+    auto_upgrade_allowed: true
+    allowed_groups: [xui_hosts]
+    allowed_hosts: [lab-global-primary]
+    forbidden_groups: [nat_trial_hosts, standard_proxy_hosts]
+    approval:
+      required: true
+      variable: xui_production_upgrade_approved
+    rollback_guarantee: medium
+    stateful: true
+    migration_risk: medium
+    concurrency:
+      lock_scope: host
+      lock_path: /var/lock/ops-software-upgrade.lockdir
+
+  caddy:
+    adapter_role: caddy
+    auto_upgrade_allowed: false
+    allowed_hosts: [lab-global-ops, lab-global-primary, lab-global-proxy]
+    forbidden_groups: [nat_trial_hosts]
+    rollback_guarantee: weak
+    stateful: false
+    migration_risk: low
+    notes: check-only in old source

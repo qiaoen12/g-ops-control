@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ops-control.invalid/schema/approval.v1.json",
+  "title": "Plan approval record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "approval_id", "owner_id", "plan_id", "plan_digest", "approver_credential_id", "approved_at", "start_before", "max_runtime_seconds"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "approval_id": {"$ref": "common.v1.json#/$defs/uuid"},
+    "owner_id": {"$ref": "common.v1.json#/$defs/uuid"},
+    "plan_id": {"$ref": "common.v1.json#/$defs/uuid"},
+    "plan_digest": {"$ref": "common.v1.json#/$defs/digest"},
+    "approver_credential_id": {"$ref": "common.v1.json#/$defs/safe_id"},
+    "approved_at": {"$ref": "common.v1.json#/$defs/utc"},
+    "start_before": {"$ref": "common.v1.json#/$defs/utc"},
+    "max_runtime_seconds": {"type": "integer", "minimum": 1, "maximum": 86400}
+  }
+}

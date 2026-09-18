@@ -1,0 +1,9 @@
+---
+id: primary-standby
+host_id: lab-global-primary
+mixed_roles: true
+force_parallel: false
+# Uses sw-dual-role so deny cannot be explained by aether-release-frozen (sw-ops-core).
+actions:
+  - {action: software.update, software_id: sw-dual-role, mixed_roles: true, force_parallel: false, expect: deny}
+  - {action: software.update, software_id: sw-dual-role, mixed_roles: true, force_parallel: true, expect: allow}

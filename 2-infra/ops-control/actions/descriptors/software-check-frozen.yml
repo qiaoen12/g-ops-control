@@ -1,0 +1,22 @@
+schema_version: 1
+action_id: software.check
+action_version: 1.0.0
+mode: read
+enabled: false
+parameter_schema:
+  type: object
+  additionalProperties: false
+  required: [software_id]
+  properties:
+    software_id: {type: string, minLength: 1, maxLength: 64}
+target_kinds: [server]
+platform_constraints: [linux]
+policy_refs: []
+adapter_ref: adapters/legacy-software-check.yml
+prechecks: [target-resolved]
+postchecks: [fact-written]
+recovery_requirement: none
+reentrancy: read_only
+timeout_seconds: 120
+sensitive_output: false
+credential_requirements: []

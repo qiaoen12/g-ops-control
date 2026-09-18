@@ -1,0 +1,21 @@
+# Template only. Review with the distro's sshd_config before applying to a
+# disposable Linux host. It does not alter any existing host automatically.
+# These two directives are global-only on Debian 13 OpenSSH and must appear
+# before the Match block in the included configuration.
+PermitUserEnvironment no
+PermitUserRC no
+
+Match User ops-call
+    AuthenticationMethods publickey
+    AuthorizedKeysFile /etc/ssh/ops-control/authorized_keys/%u
+    PermitTTY no
+    AllowAgentForwarding no
+    X11Forwarding no
+    AllowTcpForwarding no
+    PermitTunnel no
+# Each root-owned authorized_keys line supplies the fixed forced command and
+# its maintenance-bound --credential-id. Do not add a user-wide ForceCommand:
+# it would erase the per-key identity binding. The wrapper also rejects
+# SSH_ORIGINAL_COMMAND and every subsystem.
+# Keep the existing administrative Match/default login path unchanged so a
+# maintainer retains a manual recovery route.

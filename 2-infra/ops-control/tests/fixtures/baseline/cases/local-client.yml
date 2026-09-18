@@ -1,0 +1,10 @@
+---
+id: local-client
+host_id: lab-unmanaged-pc
+kind: local_client
+machine_class: unmanaged_cloud_pc
+lifecycle: active
+groups: []
+actions:
+  - {action: ansible.limit, expect: deny}
+  - {action: service.deploy, service_id: svc-monitor-agent, entry: generic, expect: deny}

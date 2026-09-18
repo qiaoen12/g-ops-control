@@ -1,0 +1,10 @@
+---
+id: windows-server
+host_id: lab-win-1
+kind: server
+machine_class: windows_home
+lifecycle: active
+groups: [windows_home]
+actions:
+  - {action: host.baseline, baseline: linux, expect: deny}
+  - {action: host.baseline, baseline: windows, expect: allow}

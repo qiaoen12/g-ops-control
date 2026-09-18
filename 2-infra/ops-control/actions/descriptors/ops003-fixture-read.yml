@@ -1,0 +1,19 @@
+schema_version: 1
+action_id: ops003.fixture.read
+action_version: 1.0.0
+mode: read
+enabled: true
+parameter_schema:
+  type: object
+  additionalProperties: false
+target_kinds: [server]
+platform_constraints: [linux]
+policy_refs: []
+adapter_ref: adapters/ops003-readonly-fixture.yml
+prechecks: [target-resolved]
+postchecks: [offline-plan-created]
+recovery_requirement: none
+reentrancy: read_only
+timeout_seconds: 30
+sensitive_output: false
+credential_requirements: []

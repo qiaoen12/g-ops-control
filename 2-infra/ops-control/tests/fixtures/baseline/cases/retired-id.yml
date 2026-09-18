@@ -1,0 +1,11 @@
+---
+id: retired-id
+host_id: lab-retired-vmiss
+kind: server
+machine_class: retired
+lifecycle: retired
+former_host_id: lab-nat-1
+groups: []
+actions:
+  - {action: any, expect: deny}
+  - {action: service.deploy, expect: deny}

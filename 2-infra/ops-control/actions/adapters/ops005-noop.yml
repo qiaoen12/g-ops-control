@@ -1,0 +1,3 @@
+kind: fixture
+operation: read-only-noop
+description: OPS-005 harmless process marker; it never contacts or mutates a target

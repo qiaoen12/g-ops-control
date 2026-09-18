@@ -1,0 +1,156 @@
+---
+# Management metadata only. Connection facts live in ansible/inventories/lab/hosts.ini.
+# host_id values are fictional lab IDs.
+schema_version: 1
+hosts:
+  lab-global-primary:
+    kind: server
+    platform: {os: linux, family: debian, arch: amd64}
+    machine_class: global
+    lifecycle: active
+    groups:
+      - managed_linux
+      - public_service_hosts
+      - backup_sources
+      - aether_primary_hosts
+      - proxy_subscription_hosts
+      - xui_hosts
+      - proxy_service_hosts
+      - docker_hosts
+      - offload_relays
+      - bore_hosts
+    policy_refs: [aether-primary-paused, no-aggregate-site, xui-not-standard-proxy]
+    services:
+      aether:
+        fictional_id: svc-ops-core
+        expected_state: paused
+        actual_hint: stopped
+      xui: {expected_state: active}
+      bore: {expected_state: active}
+
+  lab-global-ops:
+    kind: server
+    platform: {os: linux, family: debian, arch: arm64}
+    machine_class: global
+    lifecycle: active
+    groups:
+      - managed_linux
+      - data_ops_hosts
+      - docker_hosts
+      - backup_sources
+      - backup_receivers
+      - backup_edge_standby
+      - aether_standby_hosts
+      - monitoring_control_hosts
+      - kuma_hosts
+      - komari_hosts
+      - website_hosts
+      - sub2api_hosts
+      - proxy_service_hosts
+      - standard_proxy_hosts
+    policy_refs: [ledger-facts-conflict-reject, ledger-facts-conflict-reject-candidate, ledger-facts-conflict-reject-service, primary-standby-mutex]
+    ledger_vs_facts: conflict
+    services:
+      aether:
+        fictional_id: svc-ops-core
+        facts_runtime: running
+        ledger_status: paused_by_user
+        expected_state: unresolved-conflict
+        note: 不静默采用 facts 或 ledger 任一侧
+      uptime_kuma: {expected_state: active}
+      komari_server: {expected_state: active}
+      sub2api: {expected_state: loopback-only}
+
+  lab-global-proxy:
+    kind: server
+    platform: {os: linux, family: debian, arch: amd64}
+    machine_class: global_proxy_only
+    lifecycle: active
+    groups:
+      - managed_linux
+      - proxy_service_hosts
+      - standard_proxy_hosts
+    policy_refs: [global-proxy-only-no-docker-backup-aether, global-proxy-only-no-ops-core, global-proxy-only-no-backup]
+    services:
+      xray_proxy:
+        fictional_id: svc-edge-proxy
+        expected_state: active
+
+  lab-cn-1:
+    kind: server
+    platform: {os: linux, family: debian, arch: amd64}
+    machine_class: mainland
+    lifecycle: active
+    groups:
+      - managed_linux
+      - data_backup_hosts
+      - backup_sources
+      - backup_receivers
+      - backup_primary_storage
+      - docker_hosts
+      - offload_targets
+      - domestic_hosts
+    policy_refs: [offload-required, no-old-object-storage-restore, mainland-no-proxy-egress]
+    services:
+      personal_asset_center: {expected_state: loopback-only}
+
+  lab-nat-1:
+    kind: server
+    platform: {os: linux, family: debian, arch: amd64}
+    machine_class: nat_trial
+    lifecycle: active
+    groups:
+      - managed_linux
+      - nat_trial_hosts
+      - proxy_service_hosts
+    policy_refs: [nat-no-full-baseline, nat-no-vps-ops, nat-agent-separate-auth]
+    services:
+      xray_proxy: {expected_state: active}
+
+  lab-win-1:
+    kind: server
+    platform: {os: windows, family: windows, arch: amd64}
+    machine_class: windows_home
+    lifecycle: active
+    groups: [windows_home]
+    policy_refs: [windows-not-linux-class]
+    services: {}
+
+  lab-unmanaged-pc:
+    kind: local_client
+    platform: {os: linux, family: unknown, arch: amd64}
+    machine_class: unmanaged_cloud_pc
+    lifecycle: active
+    groups: []
+    policy_refs: [unmanaged-not-in-inventory]
+    services:
+      komari_agent: {expected_state: user-space}
+
+  lab-retired-vmiss:
+    kind: server
+    platform: {os: linux, family: debian, arch: amd64}
+    machine_class: retired
+    lifecycle: retired
+    former_host_id: lab-nat-1
+    groups: []
+    policy_refs: [retired-not-confused-with-successor]
+    services: {}
+
+  lab-retired-4:
+    kind: server
+    platform: {os: linux, family: debian, arch: amd64}
+    machine_class: retired
+    lifecycle: retired
+    groups: []
+    policy_refs: [retired-no-resurrect]
+    services: {}
+
+  lab-paused-svc:
+    kind: server
+    platform: {os: linux, family: debian, arch: amd64}
+    machine_class: global
+    lifecycle: active
+    groups: [managed_linux, aether_primary_hosts]
+    policy_refs: [paused-service-not-auto-start]
+    services:
+      demo_paused: {expected_state: paused}

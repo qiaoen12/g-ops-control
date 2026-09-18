@@ -1,0 +1,347 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ops-control.invalid/schema/common.v1.json",
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "safe_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9._][A-Za-z0-9._-]{0,63}$"
+    },
+    "safe_field": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+    },
+    "text": {
+      "type": "string",
+      "maxLength": 8192
+    },
+    "non_empty_text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8192
+    },
+    "version": {
+      "type": ["string", "null"],
+      "maxLength": 256
+    },
+    "utc": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$"
+    },
+    "safe_origin": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*://)(?!.*@)(?!.*[?#])[A-Za-z0-9._/-]+$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "origin", "version", "digest"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["file", "inventory", "policy", "runtime", "manual", "package", "system", "unknown"]
+        },
+        "origin": {"$ref": "#/$defs/safe_origin"},
+        "version": {"$ref": "#/$defs/version"},
+        "digest": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "family", "arch"],
+      "properties": {
+        "os": {"type": "string", "enum": ["linux", "windows", "macos", "unknown"]},
+        "family": {"type": "string", "enum": ["debian", "redhat", "windows", "darwin", "unknown"]},
+        "arch": {"type": "string", "enum": ["amd64", "arm64", "armv7", "x86", "unknown"]}
+      }
+    },
+    "connection_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^connection:[A-Za-z0-9._/-]{1,120}$"
+    },
+    "evidence_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^(?!.*(?:^|/)\\.\\.?(?:/|$))(?!/)(?![A-Za-z]:)[A-Za-z0-9][A-Za-z0-9._/-]{0,255}$"
+    },
+    "id_array": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/safe_id"},
+      "uniqueItems": true,
+      "maxItems": 10000
+    },
+    "evidence_ref_array": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/evidence_ref"},
+      "uniqueItems": true,
+      "maxItems": 10000
+    },
+    "error_details": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "field": {"$ref": "#/$defs/safe_field"},
+        "reason": {"$ref": "#/$defs/non_empty_text"},
+        "hint": {"$ref": "#/$defs/text"},
+        "count": {"type": "integer", "minimum": 0},
+        "path": {"$ref": "#/$defs/evidence_ref"}
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message", "details"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "invalid_request", "invalid_json", "unknown_target", "unsupported_target",
+            "unknown_action", "action_frozen", "approval_required", "approval_expired",
+            "plan_stale", "policy_denied", "precondition_failed", "host_busy",
+            "unreachable", "execution_failed", "verification_failed", "result_unknown",
+            "storage_failed", "source_unavailable", "context_conflict", "unsupported_command",
+            "dependency_missing", "log_rejected", "transport_unavailable"
+          ]
+        },
+        "message": {"$ref": "#/$defs/non_empty_text"},
+        "details": {"$ref": "#/$defs/error_details"}
+      }
+    },
+    "json_value": {
+      "anyOf": [
+        {"type": "null"},
+        {"type": "boolean"},
+        {"type": "integer"},
+        {"type": "string", "maxLength": 8192},
+        {"type": "array", "maxItems": 10000, "items": {"$ref": "#/$defs/json_value"}},
+        {
+          "type": "object",
+          "maxProperties": 1000,
+          "propertyNames": {"$ref": "#/$defs/safe_field"},
+          "additionalProperties": {"$ref": "#/$defs/json_value"}
+        }
+      ]
+    },
+    "json_object": {
+      "type": "object",
+      "maxProperties": 1000,
+      "propertyNames": {"$ref": "#/$defs/safe_field"},
+      "additionalProperties": {"$ref": "#/$defs/json_value"}
+    },
+    "schema_fragment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "$schema": {"type": "string", "maxLength": 256},
+        "title": {"$ref": "#/$defs/text"},
+        "type": {"type": "string", "enum": ["object", "array", "string", "integer", "boolean", "null"]},
+        "properties": {
+          "type": "object",
+          "maxProperties": 256,
+          "propertyNames": {"$ref": "#/$defs/safe_field"},
+          "additionalProperties": {"$ref": "#/$defs/schema_fragment"}
+        },
+        "required": {"type": "array", "items": {"$ref": "#/$defs/safe_field"}, "uniqueItems": true, "maxItems": 256},
+        "additionalProperties": {"type": "boolean"},
+        "items": {"$ref": "#/$defs/schema_fragment"},
+        "enum": {"type": "array", "items": {"$ref": "#/$defs/json_value"}, "maxItems": 256},
+        "const": {"$ref": "#/$defs/json_value"},
+        "minLength": {"type": "integer", "minimum": 0, "maximum": 8192},
+        "maxLength": {"type": "integer", "minimum": 0, "maximum": 8192},
+        "minimum": {"type": "integer"},
+        "maximum": {"type": "integer"},
+        "minItems": {"type": "integer", "minimum": 0, "maximum": 10000},
+        "maxItems": {"type": "integer", "minimum": 0, "maximum": 10000}
+      }
+    },
+    "service_projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fictional_id": {"$ref": "#/$defs/safe_id"},
+        "expected_state": {"type": "string", "enum": ["active", "paused", "running", "stopped", "loopback-only", "user-space", "unresolved-conflict", "unknown"]},
+        "actual_hint": {"type": ["string", "null"], "enum": ["running", "stopped", "paused", "unknown", null]},
+        "facts_runtime": {"type": ["string", "null"], "enum": ["running", "stopped", "paused", "unknown", null]},
+        "ledger_status": {"type": ["string", "null"], "enum": ["paused_by_user", "running", "stopped", "unknown", null]},
+        "note": {"$ref": "#/$defs/text"}
+      }
+    },
+    "credential_requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["credential_id", "scope", "required"],
+      "properties": {
+        "credential_id": {"$ref": "#/$defs/safe_id"},
+        "scope": {"type": "string", "enum": ["shared", "per-host"]},
+        "required": {"type": "boolean"},
+        "host_id": {"anyOf": [{"$ref": "#/$defs/safe_id"}, {"type": "null"}]},
+        "reason": {"$ref": "#/$defs/text"}
+      },
+      "allOf": [
+        {"if": {"properties": {"scope": {"const": "per-host"}}}, "then": {"required": ["host_id"], "properties": {"host_id": {"$ref": "#/$defs/safe_id"}}}},
+        {"if": {"properties": {"scope": {"const": "shared"}}}, "then": {"properties": {"host_id": {"type": "null"}}}}
+      ]
+    },
+    "doctor_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["offline"],
+      "properties": {"offline": {"const": true}}
+    },
+    "empty_params": {"type": "object", "additionalProperties": false},
+    "target_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target"],
+      "properties": {"target": {"type": "string", "pattern": "^(host|group):[A-Za-z0-9._][A-Za-z0-9._-]{0,63}$"}}
+    },
+    "status_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {"target": {"type": "string", "pattern": "^(host|group):[A-Za-z0-9._][A-Za-z0-9._-]{0,63}$"}}
+    },
+    "inspect_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "kind"],
+      "properties": {
+        "target": {"type": "string", "pattern": "^(host|group):[A-Za-z0-9._][A-Za-z0-9._-]{0,63}$"},
+        "kind": {"type": "string", "enum": ["health", "software", "backup", "all"]}
+      }
+    },
+    "plan_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "target", "params_file"],
+      "properties": {
+        "action": {"$ref": "#/$defs/safe_id"},
+        "target": {"type": "string", "pattern": "^host:[A-Za-z0-9._][A-Za-z0-9._-]{0,63}$"},
+        "params_file": {"$ref": "#/$defs/evidence_ref"}
+      }
+    },
+    "approval_open_params": {
+      "type": "object", "additionalProperties": false, "required": ["plan_id"],
+      "properties": {"plan_id": {"$ref": "#/$defs/uuid"}}
+    },
+    "apply_params": {
+      "type": "object", "additionalProperties": false, "required": ["plan_id"],
+      "properties": {"plan_id": {"$ref": "#/$defs/uuid"}}
+    },
+    "run_params": {
+      "type": "object", "additionalProperties": false, "required": ["run_id"],
+      "properties": {"run_id": {"$ref": "#/$defs/uuid"}}
+    },
+    "host_log_params": {
+      "type": "object", "additionalProperties": false, "required": ["run_id"],
+      "properties": {
+        "run_id": {"$ref": "#/$defs/uuid"},
+        "host_id": {"$ref": "#/$defs/safe_id"},
+        "tail": {"type": "integer", "minimum": 1, "maximum": 2000},
+        "cursor": {"$ref": "#/$defs/evidence_ref"}
+      }
+    },
+    "knowledge_list_params": {
+      "type": "object", "additionalProperties": false, "required": ["software_id"],
+      "properties": {"software_id": {"$ref": "#/$defs/safe_id"}, "host_id": {"$ref": "#/$defs/safe_id"}}
+    },
+    "knowledge_note_params": {
+      "type": "object", "additionalProperties": false, "required": ["run_id", "host_id", "file"],
+      "properties": {"run_id": {"$ref": "#/$defs/uuid"}, "host_id": {"$ref": "#/$defs/safe_id"}, "file": {"$ref": "#/$defs/evidence_ref"}}
+    },
+    "context_pull_params": {
+      "type": "object", "additionalProperties": false, "required": ["destination"],
+      "properties": {"destination": {"$ref": "#/$defs/evidence_ref"}, "export_id": {"$ref": "#/$defs/uuid"}}
+    },
+    "package_validate_params": {
+      "type": "object", "additionalProperties": false, "required": ["manifest"],
+      "properties": {"manifest": {"$ref": "#/$defs/evidence_ref"}}
+    },
+    "package_upload_params": {
+      "type": "object", "additionalProperties": false, "required": ["manifest", "directory"],
+      "properties": {"manifest": {"$ref": "#/$defs/evidence_ref"}, "directory": {"$ref": "#/$defs/evidence_ref"}}
+    },
+    "package_show_params": {
+      "type": "object", "additionalProperties": false, "required": ["package_id"],
+      "properties": {"package_id": {"$ref": "#/$defs/uuid"}}
+    },
+    "local_software_list_params": {"type": "object", "additionalProperties": false},
+    "local_software_check_params": {
+      "type": "object", "additionalProperties": false, "required": ["software_id"],
+      "properties": {"software_id": {"$ref": "#/$defs/safe_id"}}
+    },
+    "local_software_plan_params": {
+      "type": "object", "additionalProperties": false, "required": ["software_id", "version"],
+      "properties": {"software_id": {"$ref": "#/$defs/safe_id"}, "version": {"type": "string", "minLength": 1, "maxLength": 256}}
+    },
+    "local_plan_apply_params": {
+      "type": "object", "additionalProperties": false, "required": ["local_plan_id"],
+      "properties": {"local_plan_id": {"$ref": "#/$defs/uuid"}}
+    },
+    "local_fact_submit_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["host_id", "software_id", "platform", "install_kind", "installed_version", "source", "observed_at", "evidence_summary"],
+      "properties": {
+        "host_id": {"$ref": "#/$defs/safe_id"},
+        "software_id": {"$ref": "#/$defs/safe_id"},
+        "platform": {"$ref": "#/$defs/platform"},
+        "install_kind": {"type": "string", "enum": ["package", "binary", "container", "source", "unknown"]},
+        "installed_version": {"$ref": "#/$defs/version"},
+        "source": {"$ref": "#/$defs/source"},
+        "observed_at": {"$ref": "#/$defs/utc"},
+        "evidence_summary": {"$ref": "#/$defs/non_empty_text"}
+      }
+    },
+    "doctor_data": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["offline", "python_version", "python_compatible", "schema_count", "schema_valid", "references"],
+      "properties": {
+        "offline": {"const": true},
+        "python_version": {"$ref": "#/$defs/non_empty_text"},
+        "python_compatible": {"type": "boolean"},
+        "schema_count": {"type": "integer", "minimum": 1},
+        "schema_valid": {"type": "boolean"},
+        "references": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["logging_policy", "credential_refs"],
+          "properties": {
+            "logging_policy": {"type": "string", "enum": ["ok", "unavailable", "invalid"]},
+            "credential_refs": {"type": "string", "enum": ["ok", "unavailable", "invalid"]},
+            "management_metadata": {"type": "string", "enum": ["ok", "unavailable", "invalid"]}
+          }
+        },
+        "dependencies": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["jsonschema", "yaml"],
+          "properties": {
+            "jsonschema": {"type": "string", "enum": ["ok", "missing"]},
+            "yaml": {"type": "string", "enum": ["ok", "missing"]}
+          }
+        },
+        "network_used": {"const": false}
+      }
+    }
+  }
+}

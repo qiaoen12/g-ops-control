@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "request_id": "11111111-1111-4111-8111-111111111111",
+  "ok": true,
+  "data": {
+    "offline": true,
+    "python_version": "3.14.7",
+    "python_compatible": true,
+    "schema_count": 24,
+    "schema_valid": true,
+    "references": {"logging_policy": "ok", "credential_refs": "ok", "management_metadata": "unavailable"},
+    "dependencies": {"jsonschema": "ok", "yaml": "ok"},
+    "network_used": false
+  },
+  "error": null,
+  "generated_at": "2026-09-10T00:00:00Z"
+}

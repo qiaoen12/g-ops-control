@@ -1,0 +1,18 @@
+---
+id: nat-only
+host_id: lab-nat-1
+kind: server
+machine_class: nat_trial
+lifecycle: active
+groups: [managed_linux, nat_trial_hosts, proxy_service_hosts]
+actions:
+  - {action: host.baseline, expect: deny}
+  - {action: host.ssh-access, expect: deny}
+  - {action: host.bootstrap, expect: deny}
+  - {action: diagnostics.nodequality, expect: deny}
+  - {action: service.deploy, service_id: svc-monitor-agent, entry: generic, expect: deny}
+  - {action: service.deploy, service_id: svc-monitor-agent, entry: nat-dedicated, approved: false, expect: deny}
+  - {action: service.deploy, service_id: svc-monitor-agent, entry: nat-dedicated, expect: deny}
+  - {action: service.deploy, service_id: svc-monitor-agent, entry: nat-dedicated, approved: true, expect: allow}
+  - {action: service.deploy, service_id: svc-edge-proxy, entry: standard-proxy, expect: deny}
+  - {action: service.deploy, service_id: svc-container-runtime, expect: deny}

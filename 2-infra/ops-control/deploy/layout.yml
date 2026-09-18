@@ -1,0 +1,266 @@
+schema_version: 1
+kind: ops-control-deploy-layout
+mode: template-only
+description: >-
+  Permission declarations for a disposable Linux experiment. This file is
+  evidence for review, not an installer and not a production rollout.
+
+groups:
+  traversal: ops-control
+  members: [ops-call, ops-exec, ops-approve, ops-maint]
+  purpose: "Supplementary group with execute-only access to service-parent directories."
+  plan_readers: ops-plan-read
+  plan_reader_members: [ops-exec, ops-approve]
+  plan_reader_purpose: "Dedicated read-only projection group; it has no write access to Plan records."
+
+paths:
+  - path: /usr/local/libexec/ops-control
+    owner: root
+    group: root
+    mode: "0755"
+    kind: directory
+    purpose: root-owned fixed gateway and broker entrypoints
+  - path: /usr/local/libexec/ops-control/ops-call
+    owner: root
+    group: root
+    mode: "0755"
+    kind: file
+    purpose: fixed wrapper; only root-owned key lines provide credential binding
+  - path: /usr/local/libexec/ops-control/broker
+    owner: root
+    group: root
+    mode: "0755"
+    kind: file
+    purpose: fixed broker entrypoint; no caller-selected executable or argv
+  - path: /usr/local/libexec/ops-control/ops-approve
+    owner: root
+    group: root
+    mode: "0755"
+    kind: file
+    purpose: fixed loopback approval entrypoint; only the independent approval UID may start it
+  - path: /opt/ops-control
+    owner: root
+    group: ops-maint
+    mode: "0755"
+    kind: directory
+    purpose: immutable release parent
+  - path: /opt/ops-control/releases
+    owner: root
+    group: ops-maint
+    mode: "0755"
+    kind: directory
+    purpose: immutable release bundles
+  - path: /opt/ops-control/releases/<bundle-id>
+    owner: root
+    group: ops-maint
+    mode: "0755"
+    kind: directory
+    purpose: one published read-only bundle
+  - path: /opt/ops-control/current
+    owner: root
+    group: ops-maint
+    mode: null
+    kind: symlink
+    target_mode: "0755"
+    purpose: maintenance-selected release pointer; symlink mode is not applicable and ops-call cannot replace it
+  - path: /etc/ssh/ops-control
+    owner: root
+    group: ops-call
+    mode: "0750"
+    kind: directory
+    purpose: SSH policy material; ops-call may traverse so sshd-session can read keys, but cannot write
+  - path: /etc/ssh/ops-control/authorized_keys
+    owner: root
+    group: ops-call
+    mode: "0750"
+    kind: directory
+    purpose: root-maintained SSH key directory; group read/execute only, no write
+  - path: /etc/ssh/ops-control/authorized_keys/ops-call
+    owner: root
+    group: ops-call
+    mode: "0640"
+    kind: file
+    purpose: per-key forced-command bindings; Debian 13 sshd reads this as ops-call, so the file is group-readable and remains unwritable to service UIDs
+  - path: /etc/ops-control
+    owner: root
+    group: ops-control
+    mode: "0710"
+    kind: directory
+    purpose: trusted runtime configuration; named files provide group-specific access
+  - path: /etc/ops-control/identity.yml
+    owner: root
+    group: ops-call
+    mode: "0640"
+    kind: file
+    purpose: read-only credential-to-owner mapping; no private keys
+  - path: /etc/ops-control/connection.yml
+    owner: root
+    group: ops-exec
+    mode: "0640"
+    kind: file
+    purpose: maintenance-owned fixed connection metadata; no caller selection
+  - path: /etc/ops-control/approval.yml
+    owner: root
+    group: ops-approve
+    mode: "0600"
+    kind: file
+    purpose: maintenance-selected OPS-005 WebAuthn origin/RP/timeout configuration
+  - path: /etc/ops-control/webauthn
+    owner: root
+    group: ops-control
+    mode: "0710"
+    kind: directory
+    purpose: independent approval credential parent; not readable by ops-call
+  - path: /etc/ops-control/webauthn/trusted
+    owner: root
+    group: ops-control
+    mode: "0710"
+    kind: directory
+    purpose: trusted credential parent; metadata and mutable counters are separate stores
+  - path: /etc/ops-control/webauthn/trusted/metadata
+    owner: ops-maint
+    group: ops-approve
+    mode: "2750"
+    kind: directory
+    purpose: maintenance-owned public credential metadata; setgid preserves the verifier read group on new records
+  - path: /etc/ops-control/webauthn/trusted/metadata/credentials
+    owner: ops-maint
+    group: ops-approve
+    mode: "2750"
+    kind: directory
+    purpose: maintenance-owned credential records; setgid preserves the verifier read group and verifier has no write access
+  - path: /etc/ops-control/webauthn/trusted/metadata/credentials/<credential-id>.json
+    owner: ops-maint
+    group: ops-approve
+    mode: "0640"
+    kind: file
+    purpose: public credential, owner and status only; immutable to ops-approve
+  - path: /etc/ops-control/webauthn/trusted/counters
+    owner: ops-approve
+    group: ops-approve
+    mode: "0700"
+    kind: directory
+    purpose: verifier-owned monotonic sign-counter store; no public-key or owner fields
+  - path: /etc/ops-control/webauthn/trusted/counters/<credential-id>.json
+    owner: ops-approve
+    group: ops-approve
+    mode: "0600"
+    kind: file
+    purpose: sign counter and immutable credential binding only; no public-key or owner fields
+  - path: /var/lib/ops-control
+    owner: root
+    group: ops-control
+    mode: "0710"
+    kind: directory
+    purpose: bounded application state; members may traverse but not enumerate
+  - path: /var/lib/ops-control/request-input
+    owner: root
+    group: ops-call
+    mode: "0750"
+    kind: directory
+    purpose: maintenance-provisioned bounded parameter records; ops-call reads only
+  - path: /var/lib/ops-control/request-input/<request-id>.json
+    owner: root
+    group: ops-call
+    mode: "0640"
+    kind: file
+    purpose: immutable non-secret parameter input; not uploaded through SSH
+  - path: /var/lib/ops-control/plans
+    owner: ops-call
+    group: ops-plan-read
+    mode: "2750"
+    kind: directory
+    purpose: caller-owned immutable Plan records; fixed broker and approval service receive read-only projection
+  - path: /var/lib/ops-control/plans/<plan-id>.json
+    owner: ops-call
+    group: ops-plan-read
+    mode: "0640"
+    kind: file
+    purpose: immutable Plan v1 projection; ops-plan-read has no write permission
+  - path: /var/lib/ops-control/approvals
+    owner: ops-approve
+    group: ops-exec
+    mode: "2750"
+    kind: directory
+    purpose: reserved trusted approval records; setgid preserves the executor read group and ops-call has no access
+  - path: /var/lib/ops-control/approvals/<plan-id>.json
+    owner: ops-approve
+    group: ops-exec
+    mode: "0640"
+    kind: file
+    purpose: immutable Approval v1 projection; ops-exec has read-only access
+  - path: /var/lib/ops-control/runs
+    owner: ops-exec
+    group: ops-maint
+    mode: "0700"
+    kind: directory
+    purpose: reserved initial RunSummary records
+  - path: /var/lib/ops-control/locks
+    owner: ops-exec
+    group: ops-maint
+    mode: "0700"
+    kind: directory
+    purpose: reserved trusted release lock
+  - path: /var/lib/ops-control/uses
+    owner: ops-exec
+    group: ops-maint
+    mode: "0700"
+    kind: directory
+    purpose: reserved exclusive launch-use records
+  - path: /var/lib/ops-control/launches
+    owner: ops-exec
+    group: ops-maint
+    mode: "0700"
+    kind: directory
+    purpose: reserved immutable launch records
+  - path: /var/lib/ops-control/blockers
+    owner: ops-exec
+    group: ops-maint
+    mode: "0750"
+    kind: directory
+    purpose: reserved blocker records and controlled read projection
+  - path: /var/lib/ops-control/logs
+    owner: ops-exec
+    group: ops-call
+    mode: "2750"
+    kind: directory
+    purpose: allowlisted security events only; setgid preserves the caller read group
+  - path: /var/lib/ops-control/results
+    owner: ops-exec
+    group: ops-call
+    mode: "2750"
+    kind: directory
+    purpose: bounded non-sensitive result projection; setgid preserves the caller read group
+  - path: /var/lib/ops-control/results/<run-id>.json
+    owner: ops-exec
+    group: ops-call
+    mode: "0640"
+    kind: file
+    purpose: immutable terminal RunSummary projection; ops-call has read-only access
+
+files:
+  private_file_mode: "0600"
+  private_directory_mode: "0700"
+  no_shared_write_modes: ["0777", "0775", "0770"]
+
+boundaries:
+  ops-call:
+    writable: ["/var/lib/ops-control/plans"]
+    read_only: ["/etc/ops-control/identity.yml", "/var/lib/ops-control/request-input", "/var/lib/ops-control/logs", "/var/lib/ops-control/results"]
+    denied_write: ["/usr/local/libexec/ops-control", "/opt/ops-control", "/etc/ops-control", "/etc/ssh/ops-control/authorized_keys", "/var/lib/ops-control/approvals", "/var/lib/ops-control/request-input", "/var/lib/ops-control/uses", "/var/lib/ops-control/launches", "/var/lib/ops-control/blockers", "/etc/ops-control/webauthn"]
+  ops-exec:
+    writable: ["/var/lib/ops-control/uses", "/var/lib/ops-control/launches", "/var/lib/ops-control/blockers", "/var/lib/ops-control/logs", "/var/lib/ops-control/results"]
+    read_only: ["/var/lib/ops-control/plans", "/var/lib/ops-control/approvals"]
+    denied_write: ["/var/lib/ops-control/approvals"]
+  ops-approve:
+    writable: ["/var/lib/ops-control/approvals", "/etc/ops-control/webauthn/trusted/counters/<credential-id>.json (sign_count and fixed credential binding only)"]
+    read_only: ["/var/lib/ops-control/plans", "/etc/ops-control/webauthn/trusted/metadata"]
+    denied_write: ["/var/lib/ops-control/launches", "/var/lib/ops-control/uses", "/opt/ops-control/current"]
+  ops-maint:
+    privileged_write_via: root
+    paths: ["/usr/local/libexec/ops-control", "/opt/ops-control/releases", "/opt/ops-control/current", "/etc/ops-control", "/etc/ssh/ops-control/authorized_keys"]
+    note: "Independent human-maintained identity uses the reviewed root-owned procedure; service UIDs receive no write through these modes."
+
+maintenance:
+  root_owned_paths: ["/usr/local/libexec/ops-control", "/opt/ops-control", "/etc/ops-control", "/etc/ssh/ops-control/authorized_keys"]
+  procedure: "Review and apply each change as the independent maintenance identity; preserve the existing administrator recovery path."

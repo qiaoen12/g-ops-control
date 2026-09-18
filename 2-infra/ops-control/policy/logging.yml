@@ -1,0 +1,13 @@
+schema_version: 1
+fields:
+  event: {type: id}
+  stage: {type: id}
+  request_id: {type: uuid}
+  plan_id: {type: uuid}
+  run_id: {type: uuid}
+  host_id: {type: id}
+  action_id: {type: id}
+  phase: {type: id}
+  status: {type: id}
+  error_code: {type: id}
+  generated_at: {type: utc}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ops-control.invalid/schema/use-record.v1.json",
+  "title": "Immutable plan use record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "owner_id", "plan_id", "run_id", "created_at", "bundle_id", "resolved_targets"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "owner_id": {"$ref": "common.v1.json#/$defs/uuid"},
+    "plan_id": {"$ref": "common.v1.json#/$defs/uuid"},
+    "run_id": {"$ref": "common.v1.json#/$defs/uuid"},
+    "created_at": {"$ref": "common.v1.json#/$defs/utc"},
+    "bundle_id": {"$ref": "common.v1.json#/$defs/safe_id"},
+    "resolved_targets": {"$ref": "common.v1.json#/$defs/id_array"}
+  }
+}

@@ -1,0 +1,34 @@
+---
+# Three Linux machine classes from old machine-class-baseline.md, plus extras
+# that the old source actually uses. Windows and unmanaged clients are not
+# folded into the three Linux classes.
+schema_version: 1
+classes:
+  mainland:
+    description: 大陆服务器；可备份/Docker/国内服务；禁止代理出口与 Aether 运行时
+    allow: [os-baseline, docker, backup-source, backup-receiver, offload-target, komari-agent]
+    deny: [proxy-egress, aether-runtime, public-website, sub2api, kuma-server, komari-server, material-capture, direct-overseas-fetch]
+  global:
+    description: 完整公网 Linux；按职责再拆，不是每台都装全部功能
+    allow: [os-baseline, komari-agent, nodequality-authorized, caddy-if-named, docker-if-named, system-xray-if-standard-proxy, backup-if-named]
+    deny: [offload-target, material-capture, xui-unless-xui-hosts]
+  global_proxy_only:
+    description: 全球机但只做系统代理；旧源第五台全球代理机
+    allow: [os-baseline, komari-agent, system-xray, caddy-landing]
+    deny: [docker, backup, aether, website, kuma-monitor-item, xui-panel]
+  nat_trial:
+    description: NAT/共享入口纯代理节点，不是缩小版全球机
+    allow: [system-xray, xui-external-link, vendor-ssh-mapping, komari-agent-if-separately-authorized]
+    deny: [os-baseline, fail2ban, ufw, caddy, ssh-access-playbook, docker, aether, website, sub2api, xui-panel, backup, komari-server, kuma-host-monitor, nodequality, vps-ops, preflight]
+  windows_home:
+    description: 常开 Windows 设备；不在三类 Linux 里
+    allow: [windows-baseline, windows-dev-tools]
+    deny: [linux-baseline, nat-rules]
+  unmanaged_cloud_pc:
+    description: 不进 Ansible inventory 的第三方云电脑
+    allow: [user-space-probe]
+    deny: [deploy-monitoring, komari-agent-role, managed_linux]
+  retired:
+    description: 已退役身份；短名不得与在役后继合并
+    allow: []
+    deny: [any-live-action]

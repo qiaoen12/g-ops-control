@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ops-control.invalid/schema/request.v1.json",
+  "title": "OPS v1 request envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "request_id", "command", "params"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "request_id": {"$ref": "common.v1.json#/$defs/uuid"},
+    "command": {
+      "type": "string",
+      "enum": [
+        "doctor", "status", "inspect", "actions.list", "plan", "approval.open",
+        "apply", "result", "logs", "knowledge.list", "knowledge.add-note",
+        "context.export", "context.pull", "package.validate", "package.upload",
+        "package.show", "local.software.list", "local.software.check",
+        "local.software.plan", "local.software.apply", "local.fact.submit"
+      ]
+    },
+    "params": {"type": "object"}
+  },
+  "allOf": [
+    {"if": {"properties": {"command": {"const": "doctor"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/doctor_params"}}}},
+    {"if": {"properties": {"command": {"const": "status"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/status_params"}}}},
+    {"if": {"properties": {"command": {"const": "inspect"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/inspect_params"}}}},
+    {"if": {"properties": {"command": {"const": "actions.list"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/empty_params"}}}},
+    {"if": {"properties": {"command": {"const": "plan"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/plan_params"}}}},
+    {"if": {"properties": {"command": {"const": "approval.open"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/approval_open_params"}}}},
+    {"if": {"properties": {"command": {"const": "apply"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/apply_params"}}}},
+    {"if": {"properties": {"command": {"const": "result"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/run_params"}}}},
+    {"if": {"properties": {"command": {"const": "logs"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/host_log_params"}}}},
+    {"if": {"properties": {"command": {"const": "knowledge.list"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/knowledge_list_params"}}}},
+    {"if": {"properties": {"command": {"const": "knowledge.add-note"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/knowledge_note_params"}}}},
+    {"if": {"properties": {"command": {"const": "context.export"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/empty_params"}}}},
+    {"if": {"properties": {"command": {"const": "context.pull"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/context_pull_params"}}}},
+    {"if": {"properties": {"command": {"const": "package.validate"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/package_validate_params"}}}},
+    {"if": {"properties": {"command": {"const": "package.upload"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/package_upload_params"}}}},
+    {"if": {"properties": {"command": {"const": "package.show"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/package_show_params"}}}},
+    {"if": {"properties": {"command": {"const": "local.software.list"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/local_software_list_params"}}}},
+    {"if": {"properties": {"command": {"const": "local.software.check"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/local_software_check_params"}}}},
+    {"if": {"properties": {"command": {"const": "local.software.plan"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/local_software_plan_params"}}}},
+    {"if": {"properties": {"command": {"const": "local.software.apply"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/local_plan_apply_params"}}}}
+    ,{"if": {"properties": {"command": {"const": "local.fact.submit"}}}, "then": {"properties": {"params": {"$ref": "common.v1.json#/$defs/local_fact_submit_params"}}}}
+  ]
+}

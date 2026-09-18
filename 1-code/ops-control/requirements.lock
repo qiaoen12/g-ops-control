@@ -1,0 +1,6 @@
+# Pinned direct runtime dependencies for Python >=3.12.
+# No hash is asserted until an authorized package installation resolves the
+# platform-specific wheels; inventing hashes would make this lock false.
+jsonschema==4.25.1
+PyYAML==6.0.2
+webauthn==3.0.0

@@ -1,0 +1,31 @@
+name: tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: python -m pip install -r 1-code/ops-control/requirements.lock
+      - name: Unit tests
+        env:
+          PYTHONPATH: 1-code/ops-control
+        run: python -m unittest discover -s 1-code/ops-control/tests/unit -p 'test_*.py'
+      - name: Doctor offline
+        env:
+          PYTHONPATH: 1-code/ops-control
+        run: python -m ops doctor --offline

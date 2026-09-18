@@ -1,0 +1,3 @@
+kind: fixture
+operation: read-only-noop
+description: OPS-003 offline plan fixture; this file is hashed and never executed

@@ -1,0 +1,85 @@
+---
+# Sanitized projection: vars_files 指向 lab policy，不再引用 production 路径。
+# adapter role 文件未承接；缺失时本入口必须失败，不得现场拼 adhoc 检查。
+- name: Check managed software through registered adapters
+  hosts: all:!windows_home
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../inventories/lab/software-upgrade-policies.yml
+  vars:
+    phase: post
+    software_operation_mode: check
+  pre_tasks:
+    - name: 要求通过 --limit 明确目标主机
+      ansible.builtin.assert:
+        that:
+          - ansible_limit is defined
+          - ansible_limit | length > 0
+        fail_msg: >-
+          software-check.yml 必须配合 --limit 使用，避免误扫全部主机。
+      run_once: true
+
+    - name: 校验 phase 参数
+      ansible.builtin.assert:
+        that:
+          - phase in ['pre', 'post']
+        fail_msg: "phase 只能是 pre 或 post。"
+      run_once: true
+
+    - name: 校验 software_id 已提供且存在于 policy
+      ansible.builtin.assert:
+        that:
+          - software_id is defined
+          - software_id | length > 0
+          - software_upgrade_policies is defined
+          - software_id in software_upgrade_policies
+        fail_msg: >-
+          software_id={{ software_id | default('未提供') }} 没有检查策略。
+          不要现场拼接 adhoc 检查；先补齐 policy 和对应 role 的 tasks/check.yml。
+      run_once: true
+
+    - name: 固定当前软件检查策略
+      ansible.builtin.set_fact:
+        software_upgrade_policy: "{{ software_upgrade_policies[software_id] }}"
+
+    - name: 在 adapter 前校验软件目标和批准闸门
+      ansible.builtin.include_tasks: tasks/validate-software-target.yml
+
+    - name: 固定当前软件检查 adapter task
+      ansible.builtin.set_fact:
+        software_check_adapter_tasks_from: >-
+          {{ software_upgrade_policy.adapter_check_tasks_from | default('check') }}
+
+    - name: 校验 adapter check task 名称
+      ansible.builtin.assert:
+        that:
+          - software_check_adapter_tasks_from is match('^[A-Za-z0-9_-]+$')
+        fail_msg: >-
+          software_id={{ software_id }} 的 adapter_check_tasks_from 不合法。
+          task 名称只能包含字母、数字、下划线和连字符。
+      run_once: true
+
+    - name: 校验 adapter role check task 存在
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/../roles/{{ software_upgrade_policy.adapter_role }}/tasks/{{ software_check_adapter_tasks_from }}.yml"
+      delegate_to: localhost
+      become: false
+      register: software_check_adapter_task
+      run_once: true
+
+    - name: 阻止调用缺失的 check adapter
+      ansible.builtin.assert:
+        that:
+          - software_check_adapter_task.stat.exists
+        fail_msg: >-
+          software_id={{ software_id }} 对应的
+          roles/{{ software_upgrade_policy.adapter_role }}/tasks/check.yml 不存在。
+          不要现场拼接 adhoc 检查；先为该软件补齐受管 check adapter。
+      run_once: true
+
+  tasks:
+    - name: 调用软件 check adapter
+      ansible.builtin.include_role:
+        name: "{{ software_upgrade_policy.adapter_role }}"
+        tasks_from: "{{ software_check_adapter_tasks_from }}"

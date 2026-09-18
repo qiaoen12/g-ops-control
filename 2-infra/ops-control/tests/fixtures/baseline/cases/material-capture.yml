@@ -1,0 +1,9 @@
+---
+id: material-capture
+host_id: lab-cn-1
+kind: server
+machine_class: mainland
+lifecycle: active
+groups: [managed_linux, domestic_hosts]
+actions:
+  - {action: service.deploy, service_id: svc-capture-idle, expect: deny}

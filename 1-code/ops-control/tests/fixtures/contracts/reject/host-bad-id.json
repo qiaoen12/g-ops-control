@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "host_id": "../production",
+  "kind": "server",
+  "platform": {"os": "linux", "family": "debian", "arch": "amd64"},
+  "groups": [],
+  "lifecycle": "active",
+  "policy_refs": [],
+  "connection_ref": "connection:bad",
+  "services": {}
+}

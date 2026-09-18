@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "owner_id": "33333333-3333-4333-8333-333333333333",
+  "run_id": "66666666-6666-4666-8666-666666666666",
+  "host_id": "lab-global-primary",
+  "action_id": "software.check",
+  "phase": "complete",
+  "status": "succeeded",
+  "changed": false,
+  "exit_code": 0,
+  "error_code": null,
+  "started_at": "2026-09-10T00:00:00Z",
+  "finished_at": "2026-09-10T00:00:00Z",
+  "verification": "passed",
+  "evidence_refs": ["results/software-check-1"],
+  "log_ref": "logs/run-1"
+}

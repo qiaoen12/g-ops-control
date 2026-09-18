@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "software_id": "ops-core",
+  "host_id": "lab-global-primary",
+  "platform": {"os": "linux", "family": "debian", "arch": "amd64"},
+  "install_kind": "package",
+  "installed_version": "1.2.3",
+  "source": {"kind": "file", "origin": "fixtures/software.yml", "version": null, "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+  "observed_at": "2026-09-10T00:00:00Z",
+  "evidence_ref": "observations/software-1",
+  "candidate_version": null,
+  "candidate_checked_at": null
+}

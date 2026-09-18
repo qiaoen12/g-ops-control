@@ -1,0 +1,10 @@
+# Template only. Install as a root-owned file at
+# /etc/ssh/ops-control/authorized_keys/ops-call with mode 0640. Replace the
+# marker with a public key through the independent maintenance procedure;
+# never commit a real public or private key here.
+#
+# The credential ID is bound by the root-owned per-key forced command. It must
+# exactly match one non-secret entry in /etc/ops-control/identity.yml. Keep one
+# line per registered key; do not move this binding to client environment.
+restrict,command="/usr/bin/python3 -E -s /usr/local/libexec/ops-control/ops-call --credential-id ops-call-mac-example" ssh-ed25519 <MAINTENANCE-INJECTED-PUBLIC-KEY> ops-call-mac-example
+restrict,command="/usr/bin/python3 -E -s /usr/local/libexec/ops-control/ops-call --credential-id ops-call-windows-example" ssh-ed25519 <MAINTENANCE-INJECTED-PUBLIC-KEY> ops-call-windows-example

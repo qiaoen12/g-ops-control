@@ -1,0 +1,9 @@
+# 运行产物与本机状态，不进版本库。
+_out/
+_cache/
+*.retry
+
+# lab inventory 只跟踪示例字段名；真实值不得出现。
+ansible/inventories/lab/private/*.secrets.yml
+!ansible/inventories/lab/private/*.example.yml
+!ansible/inventories/lab/private/README.md

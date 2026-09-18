@@ -1,0 +1,19 @@
+schema_version: 1
+action_id: ops005.noop
+action_version: 1.0.0
+mode: read
+enabled: true
+parameter_schema:
+  type: object
+  additionalProperties: false
+target_kinds: [server, local_client]
+platform_constraints: []
+policy_refs: []
+adapter_ref: adapters/ops005-noop.yml
+prechecks: [target-resolved]
+postchecks: [ops005-result-written]
+recovery_requirement: none
+reentrancy: read_only
+timeout_seconds: 30
+sensitive_output: false
+credential_requirements: []

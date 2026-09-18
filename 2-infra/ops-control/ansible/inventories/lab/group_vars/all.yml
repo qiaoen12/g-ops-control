@@ -1,0 +1,6 @@
+---
+# Lab-wide non-secret defaults. No production addresses.
+ops_lab: true
+ansible_python_interpreter: auto_silent
+ssh_access_port: 2222
+nat_trial_ssh_port: 2200

@@ -1,0 +1,94 @@
+#!/bin/sh
+# Template-only, read-only preflight. It does not create users, groups,
+# directories, keys, sudoers, sshd config, releases, or rollback state.
+set -eu
+
+if [ "$#" -ne 2 ] || [ "$1" != "--root" ] || [ -z "$2" ]; then
+    printf '%s\n' 'usage: preflight.sh.example --root <staging-or-disposable-root>' >&2
+    exit 2
+fi
+
+ROOT=$2
+if [ "$ROOT" = "/" ]; then
+    prefix=
+else
+    prefix=${ROOT%/}
+fi
+
+path() {
+    printf '%s%s' "$prefix" "$1"
+}
+
+fail() {
+    printf 'preflight failed: %s\n' "$1" >&2
+    exit 1
+}
+
+check_mode() {
+    target=$1
+    expected_owner=$2
+    expected_group=$3
+    expected_mode=$4
+    actual=$(stat -c '%U:%G %a' -- "$target") || fail "missing or unreadable $target"
+    [ "$actual" = "$expected_owner:$expected_group $expected_mode" ] || fail "$target has $actual; expected $expected_owner:$expected_group $expected_mode"
+}
+
+check_dir() {
+    target=$(path "$1")
+    [ -d "$target" ] && [ ! -L "$target" ] || fail "$target is not a directory"
+    check_mode "$target" "$2" "$3" "$4"
+}
+
+check_file() {
+    target=$(path "$1")
+    [ -f "$target" ] && [ ! -L "$target" ] || fail "$target is not a regular file"
+    check_mode "$target" "$2" "$3" "$4"
+}
+
+printf '%s\n' 'OPS-004/005 read-only preflight; no changes will be made.'
+printf '%s\n' 'Required identities: ops-call, ops-exec, ops-approve, ops-maint.'
+
+check_dir /usr/local/libexec/ops-control root root 755
+check_file /usr/local/libexec/ops-control/ops-call root root 755
+check_file /usr/local/libexec/ops-control/broker root root 755
+check_file /usr/local/libexec/ops-control/ops-approve root root 755
+check_dir /opt/ops-control root ops-maint 755
+check_dir /opt/ops-control/releases root ops-maint 755
+check_dir /etc/ssh/ops-control root ops-call 750
+check_dir /etc/ssh/ops-control/authorized_keys root ops-call 750
+check_file /etc/ssh/ops-control/authorized_keys/ops-call root ops-call 640
+check_dir /etc/ops-control root ops-control 710
+check_file /etc/ops-control/identity.yml root ops-call 640
+check_file /etc/ops-control/connection.yml root ops-exec 640
+check_file /etc/ops-control/approval.yml root ops-approve 600
+check_dir /etc/ops-control/webauthn root ops-control 710
+check_dir /etc/ops-control/webauthn/trusted root ops-control 710
+check_dir /etc/ops-control/webauthn/trusted/metadata ops-maint ops-approve 2750
+check_dir /etc/ops-control/webauthn/trusted/metadata/credentials ops-maint ops-approve 2750
+check_dir /etc/ops-control/webauthn/trusted/counters ops-approve ops-approve 700
+check_dir /var/lib/ops-control root ops-control 710
+check_dir /var/lib/ops-control/request-input root ops-call 750
+check_dir /var/lib/ops-control/plans ops-call ops-plan-read 2750
+check_dir /var/lib/ops-control/uses ops-exec ops-maint 700
+check_dir /var/lib/ops-control/launches ops-exec ops-maint 700
+check_dir /var/lib/ops-control/runs ops-exec ops-maint 700
+check_dir /var/lib/ops-control/locks ops-exec ops-maint 700
+check_dir /var/lib/ops-control/blockers ops-exec ops-maint 750
+check_dir /var/lib/ops-control/logs ops-exec ops-call 2750
+check_dir /var/lib/ops-control/results ops-exec ops-call 2750
+check_dir /var/lib/ops-control/approvals ops-approve ops-exec 2750
+
+current=$(path /opt/ops-control/current)
+[ -L "$current" ] || fail "$current is not a symlink"
+target=$(readlink -- "$current") || fail "$current cannot be read"
+case "$target" in
+    /opt/ops-control/releases/*) ;;
+    *) fail "$current points outside the release root" ;;
+esac
+
+key_file=$(path /etc/ssh/ops-control/authorized_keys/ops-call)
+grep -Eq 'command="/usr/bin/python3 -E -s /usr/local/libexec/ops-control/ops-call --credential-id [A-Za-z0-9._][A-Za-z0-9._-]{0,63}"' "$key_file" || fail 'authorized_keys has no fixed credential binding'
+grep -Eq '<[^>]+>|PRIVATE|SECRET|TOKEN' "$key_file" && fail 'authorized_keys still contains a template or secret marker'
+
+printf '%s\n' 'owner/mode, fixed release link, and per-key credential binding checks passed.'
+printf '%s\n' 'No changes were made. Continue only after the owner authorizes the disposable experiment.'
