@@ -9,10 +9,15 @@ REPOSITORY_ROOT = Path(__file__).parents[4]
 
 class ReadmeTests(unittest.TestCase):
     def test_install_and_test_documents_unit_and_integration_discovery(self) -> None:
-        readme = (REPOSITORY_ROOT / "README.md").read_text(encoding="utf-8")
+        root_readme = (REPOSITORY_ROOT / "README.md").read_text(encoding="utf-8")
+        package_readme = (
+            REPOSITORY_ROOT / "1-code" / "ops-control" / "README.md"
+        ).read_text(encoding="utf-8")
 
-        self.assertIn("unittest discover -s 1-code/ops-control/tests/unit", readme)
-        self.assertIn("unittest discover -s 1-code/ops-control/tests/integration", readme)
+        self.assertIn("tests/unit", root_readme)
+        self.assertIn("tests/integration", root_readme)
+        self.assertIn("tests/unit", package_readme)
+        self.assertIn("tests/integration", package_readme)
 
 
 if __name__ == "__main__":
