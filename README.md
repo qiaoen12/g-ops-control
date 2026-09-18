@@ -18,9 +18,9 @@ Python 3.12 or newer:
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -r 1-code/ops-control/requirements.lock
-export PYTHONPATH="$PWD/1-code/ops-control"
-.venv/bin/python -m unittest discover -s 1-code/ops-control/tests/unit -p 'test_*.py'
-.venv/bin/python -m ops doctor --offline
+PYTHONPATH=1-code/ops-control .venv/bin/python -m unittest discover -s 1-code/ops-control/tests/unit -p 'test_*.py'
+PYTHONPATH=1-code/ops-control .venv/bin/python -m unittest discover -s 1-code/ops-control/tests/integration -p 'test_*.py'
+PYTHONPATH=1-code/ops-control .venv/bin/python -m ops doctor --offline
 ```
 
 `doctor --offline` only checks schemas, dependencies, and the sanitized lab references. It does not connect to hosts.
