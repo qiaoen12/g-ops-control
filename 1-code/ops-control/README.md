@@ -1,6 +1,8 @@
 # ops-control
 
-`ops-control` 是 G-lite OPS-002 的首个离线控制面基础包：严格 v1 JSON 契约、规范化摘要、受控 JSON 文件 IO、安全事件接口和 CLI 外壳。它不执行远端动作，也不替代后续 Issue 的 registry、plan、gateway、审批或 executor。
+`ops-control` 是面向个人运维场景的受控控制面实现。当前仓库已经包含严格 v1 JSON 契约、受控资源与 inventory 访问、动作 registry、不可变 plan、执行 gates、gateway、审批服务、固定 executor / broker 边界、安全日志与原子存储；同时配套脱敏 policy / inventory / Ansible 资产和 unit / integration tests。
+
+这些能力默认 fail-closed，并不等于自动拥有生产主机访问权。public repo 不保存真实 host、address 或 secret；真实 inventory、credentials 与生产连接配置必须保留在受控的私有环境中。
 
 ## 离线安装与测试
 
@@ -17,20 +19,43 @@ PYTHONPATH=1-code/ops-control .venv/bin/python -m unittest discover -s 1-code/op
 
 `requirements.lock` 只锁定直接依赖版本；平台 wheel 的传递依赖由安装器解析。没有网络安装授权时，不应伪造 hash；先准备依赖，再按锁文件安装。
 
-`doctor --offline` 只检查本包 schema、依赖和可信定位到的脱敏 `2-infra/ops-control` policy/reference。当前命令树的其它命令先返回结构化 `unsupported_command` 和非零退出码，不读取参数文件，不连接主机。`--human` 只是把同一个 response 对象渲染为人类可读文本。
+`doctor --offline` 只检查本包 schema、依赖和可信定位到的脱敏 `2-infra/ops-control` policy/reference，不连接生产主机。
+
+当前 CLI 已包含 `doctor`、`actions list`、`plan`、`approval open`、`apply`、`result` 等入口。是否能真正执行某一步，仍由当前 registry、可信资源、identity、approval、gate 和 fixed broker 条件决定；缺少前置条件时应返回结构化失败，而不是绕过安全边界。`--human` 只负责把同一个 response 对象渲染为人类可读文本。
+
+## 当前能力
+
+| 能力 | 主要实现位置 | 当前定位 |
+| --- | --- | --- |
+| schema / model contract | `schema/`、`ops/models.py` | 严格 v1 数据契约、校验与规范化 |
+| resource / inventory access | `ops/resources.py`、`ops/inventory.py` | 只从可信资源入口读取受控 policy / inventory |
+| action registry | `ops/registry.py` | 由受信 manifest 决定动作集合，默认冻结、拒绝任意 adapter |
+| plan / gates | `ops/plans.py`、`ops/gates.py` | 构造不可变 plan，并在执行前重新验证安全条件 |
+| gateway | `ops/gateway.py` | 作为结构化请求入口，绑定系统侧 identity / credential context |
+| approval | `ops/approval/`、`client/approval.py` | 提供 loopback approval / WebAuthn 边界与 approval record |
+| executor / broker | `ops/executor/` | 固定、deny-by-default 的执行边界；不接受任意 shell / path / Ansible 参数 |
+| logging / storage | `ops/logs.py`、`ops/storage.py` | 白名单安全日志与原子、受限 JSON 存储 |
+| sanitized infra / Ansible assets | `2-infra/ops-control/` | 脱敏 lab policy、虚构 inventory、受控 playbook / deploy 示例 |
 
 ## 包结构
 
-| 外部契约落点 | G-lite 实际路径 | 用途 |
+| 外部契约落点 | 仓库实际路径 | 用途 |
 | --- | --- | --- |
-| `ops/`、`client/` | `1-code/ops-control/ops/`、`client/` | Python API、CLI、传输 seam |
+| `ops/`、`client/` | `1-code/ops-control/ops/`、`client/` | Python API、CLI、gateway、approval、executor 与传输边界 |
 | `schema/*.v1.json` | `1-code/ops-control/schema/` | 可安装的数据契约 |
-| `tests/fixtures/`、`tests/unit/` | `1-code/ops-control/tests/` | 无秘密离线回归 |
-| `policy/logging.yml` | `2-infra/ops-control/policy/logging.yml` | 日志字段唯一白名单 |
-| `inventory/management.yml` | `origin/main` 的 `2-infra/ops-control/inventory/management.yml` | 脱敏管理元数据；本任务不复制、不改写 |
+| `tests/fixtures/`、`tests/unit/`、`tests/integration/` | `1-code/ops-control/tests/` | 无秘密离线回归 |
+| policy / inventory / actions | `2-infra/ops-control/` | 脱敏管理元数据、动作描述、policy 与 Ansible 投影 |
 
-`TrustedResourceProvider` 是跨域资源的唯一入口。它只允许 `policy/logging.yml`、`policy/credential-refs.yml` 和 `inventory/management.yml` 三个相对资源名；CLI 没有任意 root、policy、data 或 secret 路径参数。
+`TrustedResourceProvider` 负责把代码访问限制在受控资源根下。生产 identity、credentials、真实 inventory 和其它私有材料不应因为 public repo 中存在 schema、示例或 deploy 模板就被复制进来。
 
-## 未实现边界
+## 安全与部署边界
 
-本任务没有连接生产、读取 `$OLD_VPS_ROOT`、读取旧 `credentials/` 或 `private/*.secrets.yml`、读取 sibling backup、执行 SSH/Ansible、安装服务、实现真实 transport、审批、计划、动作注册、批次执行、恢复状态机或自动清锁。`RecoveryEvidence` 只定义不可变记录和引用；脚本或 rclone 配置存在不等于恢复验证成功。
+当前仓库已经实现控制面核心组件和受控执行边界，但仍必须区分“代码能力存在”和“生产环境已经部署/授权”：
+
+- public repo 不包含真实主机、地址、PAT、SSH key、WebAuthn credential 或其它 secret；
+- 不从请求中接受任意 root、shell、command、inventory、plugin、playbook、extra vars 或 credential 路径；
+- fixed broker / executor 的存在不表示任意业务动作已经开放，release、capability、identity、approval 与 gate 仍需满足受信条件；
+- `2-infra/ops-control` 默认是 sanitized lab / fictional inventory，不应指向旧生产 inventory；
+- 真实 private inventory / credentials 应保存在独立私有位置，并由部署环境显式绑定；
+- 仓库中的 deploy / Ansible / recovery 资产存在，不等于对应生产安装、远端执行或恢复演练已经成功；
+- `RecoveryEvidence` 等记录模型只能表达证据，不能替代真实恢复验证。
