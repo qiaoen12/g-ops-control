@@ -1,5 +1,0 @@
-# Template only. Install only after a human reviews the exact path and owner.
-# There is no shell, wildcard command, arbitrary argument, or direct general
-# ops-exec allowance in this rule.
-Cmnd_Alias OPS_CONTROL_FIXED_BROKER = /usr/local/libexec/ops-control/broker ""
-ops-call ALL=(ops-exec) NOPASSWD: OPS_CONTROL_FIXED_BROKER

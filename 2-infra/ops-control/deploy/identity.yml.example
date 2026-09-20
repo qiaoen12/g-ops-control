@@ -1,9 +1,0 @@
-schema_version: 1
-# Stable non-secret IDs only. A maintainer writes the real file as
-# /etc/ops-control/identity.yml with owner root, group ops-call, mode 0640.
-# Private keys and public-key bodies do not belong in this file.
-credentials:
-  ops-call-mac-example:
-    owner_id: 33333333-3333-4333-8333-333333333333
-  ops-call-windows-example:
-    owner_id: 33333333-3333-4333-8333-333333333333

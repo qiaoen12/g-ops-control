@@ -1,0 +1,23 @@
+version: 1
+purpose: Generic action catalog template; definitions are reviewed inputs, not a runtime schema.
+
+actions:
+  fixed_read_only_check:
+    path: fixed
+    risk: low
+    target_required: true
+    human_approval_required: false
+    destructive: false
+  fixed_high_risk_change:
+    path: fixed
+    risk: high
+    target_required: true
+    human_approval_required: true
+    destructive: false
+  destructive_purge:
+    path: fixed
+    risk: high
+    target_required: true
+    human_approval_required: true
+    destructive: true
+    ordinary_cleanup: false

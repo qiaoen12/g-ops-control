@@ -19,17 +19,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install dependencies
-        run: python -m pip install -r 1-code/ops-control/requirements.lock
-      - name: Unit tests
-        env:
-          PYTHONPATH: 1-code/ops-control
-        run: python -m unittest discover -s 1-code/ops-control/tests/unit -p 'test_*.py'
-      - name: Integration tests
-        env:
-          PYTHONPATH: 1-code/ops-control
-        run: python -m unittest discover -s 1-code/ops-control/tests/integration -p 'test_*.py'
-      - name: Doctor offline
-        env:
-          PYTHONPATH: 1-code/ops-control
-        run: python -m ops doctor --offline
+      - name: Validate Thin OPS structure and public safety
+        run: python3 -m unittest discover -s tests -p 'test_*.py'

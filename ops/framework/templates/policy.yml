@@ -1,0 +1,27 @@
+version: 1
+purpose: Generic safety policy template for a reviewed card or runbook.
+
+targeting:
+  explicit_target_required: true
+  deny_on_uncertain_or_conflicting_facts: true
+  retired_target_allowed: false
+  primary_and_standby_write_together_by_default: false
+  target_limit_discipline_required: true
+  pre_upgrade_target_validation_required: true
+  concurrency_protection_required: true
+
+risk:
+  high_risk_fixed_action_requires_human_approval: true
+  destructive_purge_is_ordinary_cleanup: false
+
+secrets:
+  public_request_or_config: prohibited
+  external_reference_only: true
+
+boundaries:
+  nat_and_offload_constraints_explicit: true
+  mainland_offload_constraints_explicit: true
+  linux_and_windows_management_separate: true
+  proxy_only_responsibility_explicit: true
+  paused_service_auto_start: prohibited
+  unmanaged_host_becomes_managed_silently: prohibited

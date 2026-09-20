@@ -1,8 +1,0 @@
-{
-  "schema_version": 1,
-  "owner_id": "33333333-3333-4333-8333-333333333333",
-  "host_id": "lab-global-primary",
-  "run_id": "66666666-6666-4666-8666-666666666666",
-  "lock_groups": ["primary-standby-mutex"],
-  "created_at": "2026-09-10T00:00:00Z"
-}

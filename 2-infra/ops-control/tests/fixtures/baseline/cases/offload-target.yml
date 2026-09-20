@@ -1,8 +1,0 @@
----
-id: offload-target
-host_id: lab-cn-1
-machine_class: mainland
-groups: [offload_targets]
-actions:
-  - {action: software.update, fetches_overseas: true, via_offload: false, expect: deny}
-  - {action: software.update, fetches_overseas: true, via_offload: true, expect: allow}
