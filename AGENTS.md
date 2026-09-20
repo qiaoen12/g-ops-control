@@ -1,38 +1,51 @@
-# ops-control
+# Agent guidance for Thin OPS
 
-Public operations-control code. Private host facts and credentials do not belong in this repository.
+## Contract and authorization
 
-## Contract
+- The current GitHub Issue body is the Contract SSOT. Chat history is not authorization.
+- Before work starts, read the current Issue and verify that it is open, the `approved` label is present, and the approval is fresh and independent. Recheck the Contract before any remote write.
+- Developer identity is `qiaoen12`; independent Reviewer identity is `qiaoen-reviewer`. Never mix credentials or use the Reviewer account for development or push.
 
-- The GitHub Issue body is the contract.
-- Label `approved` means a human approved that contract.
-- Do not treat chat history as the contract.
+## GitHub-native flow
 
-## Flow
+Use ordinary `git` and `gh` commands only:
 
-Issue → branch → pull request → review by the independent GitHub reviewer account → squash merge.
+```text
+Issue Contract → branch/worktree → PR → CI → independent Review → squash merge
+```
 
-Required checks and rulesets on GitHub are the merge gates. Do not add a parallel local workflow language.
+Required GitHub checks and rulesets are the merge gates. Do not add a parallel workflow language or bypass review. This repository is public; private runtime configuration belongs in a separate private store or repository.
 
-## Do not
+## Where work belongs
 
-- Do not use `new`, `zdev`, `zfix`, `zreview`, `zsync`, `zpr`, `zmerge`, or other G-lite runtime commands.
-- Do not write credentials, tokens, private keys, or passwords.
-- Do not upload real IP addresses, hostnames, usernames, ports, or production inventory.
-- Do not copy private configuration into this repository. Private config stays in a private store/repo and may pin a public tag.
-- Do not commit `5-record/` or personal notes.
+- Put framework rules and generic templates in `ops/framework/`.
+- Put a reusable module in `ops/modules/` only after a reviewed Contract establishes the need.
+- Put mature-tool integration boundaries in `ops/hub/`; do not implement a new control plane there.
+- Put only fictional, sanitized examples in `ops/sites/example/`.
+- Put architecture rationale and decisions in `docs/`.
 
-## Layout
+Do not add real personal facts: no production IPs, domains, hostnames, usernames, ports, inventory, credential profiles, secrets, or runtime output. Do not commit personal notes, `5-record/`, or private historical files.
 
-- `1-code/ops-control/` — Python package, schemas, tests
-- `2-infra/ops-control/` — sanitized lab policy and fictional inventory
+## Architecture guardrails
 
-## Test
+Thin OPS uses Semaphore and Ansible for fixed execution, and Service Cards/Runbooks plus existing observability and endpoint tools for exploratory work. Do not add a replacement Gateway, Broker, Plan, Approval, Router, API, or Python runtime. Do not copy old runtime schemas, wrappers, fixtures, or inventory as a compatibility layer.
 
-Run these commands from the repository root:
+A future self-built runtime requires a new approved Contract and repeated Pilot evidence. The proposal must answer all five questions:
+
+1. How many times has the real problem repeated?
+2. Why are Agent + SSH/API/CLI insufficient?
+3. Why are Semaphore and Ansible insufficient?
+4. Why are Komari, Logs, and Restic insufficient?
+5. What concrete loss follows from not developing it?
+
+If those answers are not clear, do not develop the runtime.
+
+## Verification
+
+Run the same entry point used by CI from the repository root:
 
 ```bash
-PYTHONPATH=1-code/ops-control python -m unittest discover -s 1-code/ops-control/tests/unit -p 'test_*.py'
-PYTHONPATH=1-code/ops-control python -m unittest discover -s 1-code/ops-control/tests/integration -p 'test_*.py'
-PYTHONPATH=1-code/ops-control python -m ops doctor --offline
+python3 -m unittest discover -s tests -p 'test_*.py'
 ```
+
+Also check `git diff --check`, confirm that `1-code/` and `2-infra/` do not exist, and scan the current tree for personal facts or secret material before opening a PR.
