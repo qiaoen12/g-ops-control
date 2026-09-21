@@ -4,7 +4,10 @@
 
 - The current GitHub Issue body is the Contract SSOT. Chat history is not authorization.
 - Before work starts, read the current Issue and verify that it is open, the `approved` label is present, and the approval is fresh and independent. Recheck the Contract before any remote write.
-- Developer identity is `qiaoen12`; independent Reviewer identity is `qiaoen-reviewer`. Never mix credentials or use the Reviewer account for development or push.
+- Developer identity is `g-lite-developer[bot]` / App ID `5017695`; independent Reviewer identity is `g-lite-reviewer[bot]` / App ID `5010632`. Never mix credentials or use the Reviewer account for development or push.
+- Human Authority is the human repository controller. Genesis, governance changes, and the final squash merge stay human-controlled.
+- Local Bootstrap configures identity only; GitHub is the SSOT for Issue, PR, review, check, and merge state. This repository has no local task/review/merge state.
+- Current status is `ACTIVE`; consumer Required Check is `unit`.
 
 ## GitHub-native flow
 

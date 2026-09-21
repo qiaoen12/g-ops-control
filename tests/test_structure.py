@@ -82,7 +82,7 @@ class StructureTests(unittest.TestCase):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         for phrase in (
             "Thin OPS",
-            "qiaoen12/ops-control",
+            "qiaoen12/g-ops-control",
             "Semaphore",
             "Ansible",
             "Komari",
