@@ -13,6 +13,7 @@ def current_files():
         path
         for path in ROOT.rglob("*")
         if path.is_file()
+        and path.name != ".DS_Store"
         and not {".git", "__pycache__"}.intersection(path.relative_to(ROOT).parts)
     )
 
