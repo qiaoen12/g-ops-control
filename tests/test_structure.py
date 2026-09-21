@@ -2,20 +2,35 @@
 
 from pathlib import Path
 import re
+import tempfile
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+NON_TEXT_SYSTEM_METADATA_NAMES = frozenset({".DS_Store", "Thumbs.db", "Desktop.ini"})
+EXCLUDED_DIRECTORIES = frozenset({".git", "__pycache__"})
+
+
+def text_files(root):
+    root = Path(root)
+    return (
+        path
+        for path in root.rglob("*")
+        if path.is_file()
+        and path.name not in NON_TEXT_SYSTEM_METADATA_NAMES
+        and not EXCLUDED_DIRECTORIES.intersection(path.relative_to(root).parts)
+    )
 
 
 def current_files():
-    return (
-        path
-        for path in ROOT.rglob("*")
-        if path.is_file()
-        and path.name != ".DS_Store"
-        and not {".git", "__pycache__"}.intersection(path.relative_to(ROOT).parts)
-    )
+    return text_files(ROOT)
+
+
+def read_text_file(path):
+    path = Path(path)
+    if path.name in NON_TEXT_SYSTEM_METADATA_NAMES:
+        raise ValueError(f"non-text system metadata: {path.name}")
+    return path.read_text(encoding="utf-8")
 
 
 class StructureTests(unittest.TestCase):
@@ -80,7 +95,7 @@ class StructureTests(unittest.TestCase):
                 self.assertFalse((ROOT / relative).exists())
 
     def test_readme_describes_public_boundary_and_paths(self):
-        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        readme = read_text_file(ROOT / "README.md")
         for phrase in (
             "Thin OPS",
             "qiaoen12/g-ops-control",
@@ -95,18 +110,10 @@ class StructureTests(unittest.TestCase):
                 self.assertIn(phrase, readme)
 
     def test_templates_have_basic_shape(self):
-        service_card = (ROOT / "ops/framework/templates/service-card.md").read_text(
-            encoding="utf-8"
-        )
-        runbook = (ROOT / "ops/framework/templates/runbook.md").read_text(
-            encoding="utf-8"
-        )
-        catalog = (ROOT / "ops/framework/templates/action-catalog.yml").read_text(
-            encoding="utf-8"
-        )
-        policy = (ROOT / "ops/framework/templates/policy.yml").read_text(
-            encoding="utf-8"
-        )
+        service_card = read_text_file(ROOT / "ops/framework/templates/service-card.md")
+        runbook = read_text_file(ROOT / "ops/framework/templates/runbook.md")
+        catalog = read_text_file(ROOT / "ops/framework/templates/action-catalog.yml")
+        policy = read_text_file(ROOT / "ops/framework/templates/policy.yml")
 
         for phrase in ("# Service Card", "Explicit target", "Secrets"):
             self.assertIn(phrase, service_card)
@@ -141,7 +148,7 @@ class StructureTests(unittest.TestCase):
         personal_marker = re.compile(r"(?i)\bvps\d+\b")
 
         for path in current_files():
-            text = path.read_text(encoding="utf-8", errors="replace")
+            text = read_text_file(path)
             relative = path.relative_to(ROOT).as_posix()
             for pattern, label in (
                 (private_key, "private key material"),
@@ -152,17 +159,30 @@ class StructureTests(unittest.TestCase):
                 with self.subTest(path=relative, finding=label):
                     self.assertIsNone(pattern.search(text))
 
+    def test_text_files_skip_known_metadata_but_not_decode_errors(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / ".DS_Store").write_bytes(b"\xff")
+            (root / "Thumbs.db").write_bytes(b"\xfe")
+            (root / "regular.txt").write_text("plain text", encoding="utf-8")
+            broken = root / "broken.txt"
+            broken.write_bytes(b"\xff")
+
+            self.assertEqual(
+                {path.name for path in text_files(root)},
+                {"regular.txt", "broken.txt"},
+            )
+            self.assertEqual(read_text_file(root / "regular.txt"), "plain text")
+            with self.assertRaises(UnicodeDecodeError):
+                read_text_file(broken)
+
     def test_migration_source_is_not_an_active_dependency(self):
         active_roots = (ROOT / "ops", ROOT / "tests", ROOT / ".github/workflows")
         migration_source_marker = "g-lite" + "-ops"
         for root in active_roots:
-            for path in root.rglob("*"):
-                if path.is_file() and path.suffix != ".pyc":
-                    with self.subTest(path=path.relative_to(ROOT).as_posix()):
-                        self.assertNotIn(
-                            migration_source_marker,
-                            path.read_text(encoding="utf-8"),
-                        )
+            for path in text_files(root):
+                with self.subTest(path=path.relative_to(ROOT).as_posix()):
+                    self.assertNotIn(migration_source_marker, read_text_file(path))
 
 
 if __name__ == "__main__":
