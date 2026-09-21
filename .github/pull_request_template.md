@@ -1,6 +1,10 @@
 ## Why
 
-<!-- What approved Contract does this implement? -->
+<!-- Why is this change needed? -->
+
+## Issue Contract:
+
+<!-- Link the approved Issue Contract, for example `Fixes #123`. -->
 
 ## What
 

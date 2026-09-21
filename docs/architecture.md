@@ -4,7 +4,7 @@
 
 Thin OPS is the public, canonical software layer for safe operations guidance. It keeps the reusable parts small: framework rules, templates, mature-tool integration boundaries, future reusable modules, a sanitized example, and CI/ADR evidence.
 
-The public repository is `qiaoen12/ops-control`. Private runtime repositories or stores may consume a reviewed public tag, but they remain the source of real inventory, connection details, credentials, secrets, live state, logs, and service databases.
+The public repository is `qiaoen12/g-ops-control`. Private runtime repositories or stores may consume a reviewed public tag, but they remain the source of real inventory, connection details, credentials, secrets, live state, logs, and service databases.
 
 ## Execution boundaries
 

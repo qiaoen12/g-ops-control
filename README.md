@@ -2,8 +2,8 @@
 
 Thin OPS is a small, public operations framework: reusable safety rules, service-card and runbook templates, mature-tool integration guidance, and sanitized examples. It describes how an operator should make a change without becoming another operations control plane.
 
-Public software: `qiaoen12/ops-control`.
-The canonical public software repository is `qiaoen12/ops-control`. It owns:
+Public software: `qiaoen12/g-ops-control`.
+The canonical public software repository is `qiaoen12/g-ops-control`. It owns:
 
 - framework guidance and reusable templates;
 - reusable modules when a real, repeated need justifies one;
@@ -45,6 +45,14 @@ Runtime data is outside Git. The repository keeps only generic guidance and fict
 | `ops/sites/example/` | Minimal fictional site example |
 | `docs/` | Architecture and ADRs |
 | `tests/` | Structure and public-safety checks |
+
+G-lite v3.1 binding:
+
+- Developer: `g-lite-developer[bot]` / App ID `5017695`.
+- Reviewer: `g-lite-reviewer[bot]` / App ID `5010632`.
+- Human Authority: the human repository controller owns Genesis, governance, and the final squash merge.
+- Local Bootstrap configures identity only; GitHub is the SSOT for Issue, PR, review, check, and merge state.
+- Status: ACTIVE; Required Check: `unit`.
 
 Run the local CI-equivalent check from the repository root:
 

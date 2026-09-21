@@ -14,7 +14,11 @@ What concrete outcome is requested?
 
 ### Scope
 
-What paths and behavior are in scope? What is explicitly out of scope?
+What paths and behavior are in scope?
+
+### Out of scope
+
+What must not be changed or added in this task?
 
 ### Safety and public boundary
 
@@ -27,4 +31,4 @@ How will the result be verified, including the required CI check?
 
 ### Authorization
 
-The author must not approve the same Contract. A human independent Reviewer adds `approved` only after reading the final Issue body.
+The author must not approve the same Contract. The independent `g-lite-reviewer[bot]` adds `approved` only after reading the final Issue body; Developer and Reviewer remain separate.
