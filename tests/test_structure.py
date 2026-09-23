@@ -40,7 +40,7 @@ class StructureTests(unittest.TestCase):
             "AGENTS.md",
             ".gitignore",
             ".github/workflows/tests.yml",
-            ".github/ISSUE_TEMPLATE/contract.md",
+            ".github/ISSUE_TEMPLATE/task.md",
             ".github/pull_request_template.md",
             "ops/framework/README.md",
             "ops/framework/templates/service-card.md",
