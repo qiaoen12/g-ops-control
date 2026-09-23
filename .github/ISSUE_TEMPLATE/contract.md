@@ -6,6 +6,10 @@ labels: ""
 assignees: ""
 ---
 
+## Original Intent
+
+What did the requester originally ask for? Preserve their wording before refining the Contract.
+
 ## Contract
 
 ### Goal

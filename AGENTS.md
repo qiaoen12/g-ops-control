@@ -2,8 +2,8 @@
 
 ## Contract and authorization
 
-- The current GitHub Issue body is the Contract SSOT. Chat history is not authorization.
-- Before work starts, read the current Issue and verify that it is open, the `approved` label is present, and the approval is fresh and independent. Recheck the Contract before any remote write.
+- The current GitHub Issue body is the Contract SSOT, with Original Intent before Contract. Chat history is not authorization.
+- Before work starts, read the current Issue: it must be OPEN, and the latest `approved` label event (accounting for removal and re-addition) must be by an Actor independent of the author and Developer, at or after the last body edit. A label alone is not enough. Recheck the Contract before any remote write.
 - Developer identity is `g-lite-developer[bot]` / App ID `5017695`; independent Reviewer identity is `g-lite-reviewer[bot]` / App ID `5010632`. Never mix credentials or use the Reviewer account for development or push.
 - Human Authority is the human repository controller. Genesis, governance changes, and the final squash merge stay human-controlled.
 - Local Bootstrap configures identity only; GitHub is the SSOT for Issue, PR, review, check, and merge state. This repository has no local task/review/merge state.
@@ -17,7 +17,7 @@ Use ordinary `git` and `gh` commands only:
 Issue Contract → branch/worktree → PR → CI → independent Review → squash merge
 ```
 
-Required GitHub checks and rulesets are the merge gates. Do not add a parallel workflow language or bypass review. This repository is public; private runtime configuration belongs in a separate private store or repository.
+Developer must authenticate as its own App, verify commit author/committer, and use App-authenticated HTTPS for fetch and push with global Git URL rewrites isolated; do not fall back to human or Reviewer credentials. Before proposing a PR, fetch current `main` and verify it is an ancestor of HEAD. Required checks (including `unit`) and independent Reviewer approval must apply to the current PR HEAD; changes to HEAD require new checks and Review. Only Human Authority authorizes the final squash merge through GitHub gates. Do not add a parallel workflow language or bypass review. This repository is public; private runtime configuration belongs in a separate private store or repository.
 
 ## Where work belongs
 
