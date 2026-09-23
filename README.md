@@ -46,11 +46,12 @@ Runtime data is outside Git. The repository keeps only generic guidance and fict
 | `docs/` | Architecture and ADRs |
 | `tests/` | Structure and public-safety checks |
 
-G-lite v3.1 binding:
+G-lite v3.4 binding:
 
-- Developer: `g-lite-developer[bot]` / App ID `5017695`.
-- Reviewer: `g-lite-reviewer[bot]` / App ID `5010632`.
-- Human Authority: the human repository controller owns Genesis, governance, and the final squash merge.
+- The GitHub Issue body is the Contract SSOT: record Original Intent before Contract. Start only from an OPEN Issue whose latest `approved` label event comes from an independent Actor and is not older than its last body edit; recheck before remote writes.
+- Developer: `g-lite-developer[bot]` / App ID `5017695`; Reviewer: `g-lite-reviewer[bot]` / App ID `5010632`. They use separate App identities; neither self-approves or substitutes for Human Authority.
+- Developer fetches/pushes via its App over HTTPS, verifies commit identity, and isolates Git transport from global URL rewrites. Before PR, check that current `main` is an ancestor of the proposed HEAD; checks and independent Review must apply to that HEAD. A new commit needs fresh checks and Review.
+- Human Authority: the human repository controller owns Genesis, governance, and the final squash merge through GitHub gates.
 - Local Bootstrap configures identity only; GitHub is the SSOT for Issue, PR, review, check, and merge state.
 - Status: ACTIVE; Required Check: `unit`.
 
