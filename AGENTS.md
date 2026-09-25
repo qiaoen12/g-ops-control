@@ -52,3 +52,72 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
 Also check `git diff --check`, confirm that `1-code/` and `2-infra/` do not exist, and scan the current tree for personal facts or secret material before opening a PR.
+<!-- g-lite:managed protocol start -->
+# Agent protocol
+
+This repository uses the G-lite GitHub-native protocol.
+
+## Contract
+
+For new tasks, record Original Intent (the user's words or a fixed PRD reference) before the Issue Contract containing Goal, Acceptance, Out of scope, and Authorization. This version does not require reconciler to audit older consumers for Original Intent.
+
+Before development and again before PR review, read the current OPEN Issue Contract, author/editor, lastEditedAt, current approved label and latest approved label event (actor and timestamp). Missing approval is INVALID; lastEditedAt absent or <= approvedAt is FRESH; later edits are STALE. Stop if facts cannot be verified or authorization is invalid/stale. The Actor that writes or materially edits the current Contract version cannot approve it. Reauthorization requires independent fresh approved; do not cache authorization.
+
+## Roles
+
+- Main coordinates the Issue → Developer → CI → independent Reviewer → rework → merge flow; it is not another GitHub Actor and must not write the Developer's PR branch. It may mechanically merge with Human Authority credentials only after that human explicitly authorizes the current task.
+- Developer Actor: machine identity / GitHub App; may create/edit Contracts, develop, push, and open/update PRs within fresh authorized scope. It must not approve its own Contract, provide its own Required Review, or merge.
+- Reviewer Actor: independent machine identity / GitHub App; may independently add approved and review the current PR HEAD with APPROVE / REQUEST_CHANGES. It must not develop, push, change repository governance, or merge.
+- Developer and Reviewer must not independently change the Ruleset / governance that constrains them.
+- Human Authority: one or more human accounts with appropriate permissions on this repository. After GitHub gates pass, it may perform final Squash merge through GitHub UI, CLI, API, or tools under its explicit instruction.
+- Concrete account/App bindings are replaceable per consumer; no canonical username or App is required. Verify both Apps' identities, independence, and installation access externally. Do not add a Merge Bot / Merge Executor or identity registry.
+
+## Genesis / ACTIVE
+
+Human Authority controls Genesis: create the repository, install/authorize both Apps, establish initial protocol files and CI, configure Ruleset / governance / security, and verify ACTIVE readiness. Tools may execute under Human Authority's identity and authorization; this does not grant Developer administrator powers.
+
+In ACTIVE, Developer + Reviewer handle daily tasks; Human Authority intervenes at governance boundaries or final merge.
+
+## Local Bootstrap
+
+Local Bootstrap ≠ Repository Task. Local App private key installation/rotation, ~/.config/g-lite/ credential directories, token helpers, shell identity bootstrap, read-only identity preflight, and new-machine identity setup need no Issue Contract. They do not authorize changing repository durable facts; repository changes enter the appropriate lifecycle.
+
+In each checkout that uses the local credential entry, first add `.g-lite-local/` to that checkout's Git local exclude (locate it with `git rev-parse --git-path info/exclude`). Then create a `.g-lite-local/credentials` symlink to the actual machine credential root. Neither the symlink nor its target belongs in Git; do not change repository `.gitignore` or assume fixed Developer / Reviewer private-key file layouts. Verify the entry is ignored and a previously clean `git status` remains clean.
+
+Developer / Reviewer use short-lived Installation Access Tokens. Never put private keys, JWTs, tokens, or PATs in repo, Issue, PR, evidence logs, or canonical state; do not persist tokens in state files. Local credentials stay in external secure mechanisms, outside canonical runtime.
+
+The current shell or `gh` showing a human Actor does not prove the target Bot credentials are absent. For the required Developer / Reviewer role, check `.g-lite-local/credentials` first; if missing or unusable, check the machine-local `~/.config/g-lite/` configuration entry before reporting that credentials are unavailable. Inspect only minimal metadata needed to select the target Actor, such as existence, type, and accessibility. Do not enumerate or display credential contents or record keys, JWTs, tokens, PATs, or resolved machine-specific credential paths in repo, Issue, PR, or logs.
+
+Verify API Actor, commit author, and Git transport separately. Developer clone/fetch/push uses App HTTPS credentials. Before each operation verify the effective HTTPS remote and absence of applicable insteadOf rewrite: user/global Git config can silently turn HTTPS into human SSH authentication. Prefer task-process config/credential isolation, inspect repo-local config, and preserve existing user global Git / SSH settings.
+
+Human, Developer, and Reviewer credentials may coexist on one Mac. Before each key GitHub / Git action verify the actual API Actor, transport, and role. Developer must not push/merge as Human Authority; Reviewer must not Review as Developer or Human Authority. Stop an action on identity mismatch. Physical credential isolation is future hardening, not a v3.4 Freeze condition.
+
+## GitHub facts
+
+GitHub is the source of truth for Issue authorization, PR, Checks, Review, Ruleset, merge eligibility, and merge result. Do not create local task, review, merge, or approval state or a second GitHub database.
+
+The default branch requires PRs, at least one independent approval, stale review dismissal, a stable consumer-owned Required Check, squash-only merge, and no routine bypass. Enable Secret scanning / Push protection where supported. Consumer CI is owned by this repository and its Agent; G-lite does not generate or select it. Reconciler App assertions are invocation-only, require external verification of both roles, and do not authorize governance writes or manage credentials.
+
+## Main delivery SOP
+
+1. Main follows CI and Review. Failed CI or REQUEST_CHANGES returns to Developer for in-scope repair and a new HEAD.
+   Wait for Required Checks on that HEAD and independent Reviewer re-review.
+2. Before merge, read live main SHA B and PR HEAD H; prove B is an ancestor of H with GitHub compare
+   or `git merge-base --is-ancestor`. On mismatch, Main does not update the PR branch.
+   Developer uses App identity to update main/rebase/merge base and push a new HEAD;
+   only Developer may run `gh pr update-branch` when it writes the branch. Repeat CI, Review, and preflight.
+3. `merge-authorized` is an optional one-time Genesis prerequisite for automatic completion.
+   On explicit task-level instruction from Human Authority, Main verifies that human API Actor and creates/applies the label if absent.
+   Reconciler bootstrap does not create it. Without fresh label, ask Human Authority again before final merge;
+   Developer-authored Issue text does not grant merge permission.
+4. For automatic merge, verify the label is still attached, its latest LabeledEvent Actor is an authorized human,
+   its createdAt is no earlier than Issue body lastEditedAt, and authorization has not been revoked.
+5. Preflight live GitHub facts: OPEN Issue, current Contract with independent fresh approved,
+   OPEN non-draft PR targeting main, B ancestor of H, Required Checks PASS and independent APPROVE on H,
+   and merge eligibility. Re-read B, H, authorization, and gates immediately before merge;
+   verify Human Authority API Actor, then squash merge with expected H (`gh pr merge --squash --match-head-commit H`).
+   Read merged state, merge commit SHA, and Issue state; report Checks, Review, and unverified items.
+   Without a strict latest-base Ruleset, main can advance between the last read and merge.
+6. Ask Human Authority for scope changes, unverifiable identity/authorization/gates, governance or high-impact actions,
+   or about three failures on one path without new evidence. Continue routine CI and Review rework within scope.
+<!-- g-lite:managed protocol end -->
